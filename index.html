@@ -5,1372 +5,1187 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Изометрическая визуализация систем автомобиля</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #0a0e17;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    color: #e0e6f0;
-    overflow: hidden;
-    height: 100vh;
-  }
-  #app {
-    display: flex;
-    height: 100vh;
-  }
-  /* Side Panel */
-  #panel {
-    width: 320px;
-    background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
-    border-right: 1px solid #1e293b;
-    display: flex;
-    flex-direction: column;
-    z-index: 10;
-    overflow-y: auto;
-  }
-  #panel h1 {
-    font-size: 16px;
-    padding: 20px 16px 8px;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-weight: 600;
-  }
-  #panel h2 {
-    font-size: 13px;
-    padding: 14px 16px 6px;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 500;
-  }
-  .system-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    border: none;
-    background: transparent;
-    color: #cbd5e1;
-    font-size: 13px;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s;
-    width: 100%;
-  }
-  .system-btn:hover {
-    background: rgba(59,130,246,0.1);
-    color: #fff;
-  }
-  .system-btn.active {
-    background: rgba(59,130,246,0.15);
-    color: #60a5fa;
-    border-left: 3px solid #3b82f6;
-  }
-  .system-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .system-info {
-    padding: 16px;
-    background: rgba(30,41,59,0.5);
-    margin: 8px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    line-height: 1.6;
-    color: #94a3b8;
-    border: 1px solid #1e293b;
-  }
-  .system-info strong { color: #e2e8f0; }
-  .stat-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(30,41,59,0.6);
-  }
-  .stat-row:last-child { border-bottom: none; }
-  .stat-val { color: #60a5fa; font-weight: 600; }
-
-  /* Canvas area */
-  #canvas-wrap {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-  }
-  canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-  /* Top bar */
-  #topbar {
-    position: absolute;
-    top: 16px; left: 16px; right: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    pointer-events: none;
-    z-index: 5;
-  }
-  #topbar > * { pointer-events: all; }
-  .controls {
-    display: flex;
-    gap: 8px;
-  }
-  .ctrl-btn {
-    background: rgba(17,24,39,0.85);
-    border: 1px solid #1e293b;
-    color: #94a3b8;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.2s;
-    backdrop-filter: blur(8px);
-  }
-  .ctrl-btn:hover { background: rgba(30,41,59,0.9); color: #fff; }
-  .ctrl-btn.active-ctrl { background: #1e40af; color: #fff; border-color: #3b82f6; }
-  #rpm-display {
-    background: rgba(17,24,39,0.85);
-    border: 1px solid #1e293b;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-size: 13px;
-    backdrop-filter: blur(8px);
-    display: flex;
-    gap: 20px;
-  }
-  .rpm-val { color: #60a5fa; font-weight: 700; font-size: 15px; }
-  #tooltip {
-    position: absolute;
-    background: rgba(15,23,42,0.95);
-    border: 1px solid #334155;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    pointer-events: none;
-    display: none;
-    z-index: 20;
-    max-width: 200px;
-    backdrop-filter: blur(8px);
-  }
-  /* Legend */
-  #legend {
-    position: absolute;
-    bottom: 16px;
-    left: 16px;
-    background: rgba(17,24,39,0.85);
-    border: 1px solid #1e293b;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 11px;
-    backdrop-filter: blur(8px);
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    max-width: 600px;
-  }
-  .legend-item { display: flex; align-items: center; gap: 6px; color: #94a3b8; }
-  .legend-color { width: 12px; height: 4px; border-radius: 2px; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#080c14;font-family:'Segoe UI',system-ui,sans-serif;color:#e0e6f0;overflow:hidden;height:100vh}
+#app{display:flex;height:100vh}
+#panel{width:310px;background:linear-gradient(180deg,#0f1520 0%,#0a0f1a 100%);border-right:1px solid #1a2235;display:flex;flex-direction:column;z-index:10;overflow-y:auto;scrollbar-width:thin}
+#panel::-webkit-scrollbar{width:4px}
+#panel::-webkit-scrollbar-thumb{background:#1e293b;border-radius:2px}
+#panel h1{font-size:14px;padding:18px 16px 6px;color:#64748b;text-transform:uppercase;letter-spacing:2px;font-weight:600}
+#panel h2{font-size:11px;padding:14px 16px 4px;color:#475569;text-transform:uppercase;letter-spacing:1.2px;font-weight:500}
+.sbtn{display:flex;align-items:center;gap:10px;padding:9px 16px;border:none;background:transparent;color:#94a3b8;font-size:13px;cursor:pointer;text-align:left;transition:all .15s;width:100%}
+.sbtn:hover{background:rgba(99,102,241,.08);color:#c7d2fe}
+.sbtn.act{background:rgba(99,102,241,.12);color:#a5b4fc;border-left:3px solid #6366f1;padding-left:13px}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px currentColor}
+.sinfo{padding:14px;background:rgba(15,21,32,.8);margin:8px 12px;border-radius:8px;font-size:12px;line-height:1.7;color:#94a3b8;border:1px solid #1a2235}
+.sinfo strong{color:#e2e8f0;font-size:13px}
+.sinfo .desc{color:#818cf8;margin-bottom:8px}
+.sr{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(30,41,59,.4)}
+.sr:last-child{border:none}
+.sv{color:#a5b4fc;font-weight:600;font-size:11px}
+#cw{flex:1;position:relative;overflow:hidden}
+canvas{display:block}
+#top{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;z-index:5}
+#top>*{pointer-events:all}
+.ctrls{display:flex;gap:6px}
+.cb{background:rgba(15,20,30,.9);border:1px solid #1e293b;color:#94a3b8;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .15s;backdrop-filter:blur(10px)}
+.cb:hover{background:rgba(30,40,60,.9);color:#e2e8f0;border-color:#334155}
+.cb.on{background:rgba(99,102,241,.3);color:#c7d2fe;border-color:#6366f1}
+#hud{background:rgba(15,20,30,.9);border:1px solid #1e293b;padding:8px 16px;border-radius:8px;font-size:12px;backdrop-filter:blur(10px);display:flex;gap:18px;color:#64748b}
+.hv{color:#a5b4fc;font-weight:700;font-size:14px}
+#tip{position:absolute;background:rgba(10,15,25,.95);border:1px solid #334155;padding:8px 12px;border-radius:6px;font-size:11px;pointer-events:none;display:none;z-index:20;max-width:220px;backdrop-filter:blur(10px);color:#c7d2fe}
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="panel">
-    <h1>Системы машины</h1>
-    <h2>Силовая установка</h2>
-    <button class="system-btn active" data-sys="engine" onclick="selectSystem('engine')">
-      <span class="system-dot" style="background:#ef4444"></span>Двигатель (ДВС)
-    </button>
-    <button class="system-btn" data-sys="fuel" onclick="selectSystem('fuel')">
-      <span class="system-dot" style="background:#f59e0b"></span>Топливная система
-    </button>
-    <button class="system-btn" data-sys="intake" onclick="selectSystem('intake')">
-      <span class="system-dot" style="background:#a78bfa"></span>Впуск / Выпуск
-    </button>
-    <h2>Трансмиссия</h2>
-    <button class="system-btn" data-sys="transmission" onclick="selectSystem('transmission')">
-      <span class="system-dot" style="background:#3b82f6"></span>КПП
-    </button>
-    <button class="system-btn" data-sys="drivetrain" onclick="selectSystem('drivetrain')">
-      <span class="system-dot" style="background:#6366f1"></span>Привод / Карданы
-    </button>
-    <h2>Шасси</h2>
-    <button class="system-btn" data-sys="suspension" onclick="selectSystem('suspension')">
-      <span class="system-dot" style="background:#10b981"></span>Подвеска
-    </button>
-    <button class="system-btn" data-sys="steering" onclick="selectSystem('steering')">
-      <span class="system-dot" style="background:#14b8a6"></span>Рулевое управление
-    </button>
-    <button class="system-btn" data-sys="brakes" onclick="selectSystem('brakes')">
-      <span class="system-dot" style="background:#f43f5e"></span>Тормозная система
-    </button>
-    <h2>Обеспечение</h2>
-    <button class="system-btn" data-sys="cooling" onclick="selectSystem('cooling')">
-      <span class="system-dot" style="background:#06b6d4"></span>Охлаждение
-    </button>
-    <button class="system-btn" data-sys="oil" onclick="selectSystem('oil')">
-      <span class="system-dot" style="background:#d97706"></span>Смазка (масло)
-    </button>
-    <button class="system-btn" data-sys="electrical" onclick="selectSystem('electrical')">
-      <span class="system-dot" style="background:#eab308"></span>Электрика
-    </button>
-    <button class="system-btn" data-sys="exhaust" onclick="selectSystem('exhaust')">
-      <span class="system-dot" style="background:#78716c"></span>Выхлопная система
-    </button>
-    <h2>Кузов</h2>
-    <button class="system-btn" data-sys="body" onclick="selectSystem('body')">
-      <span class="system-dot" style="background:#64748b"></span>Кузов / Рама
-    </button>
-    <div id="sys-info" class="system-info"></div>
-  </div>
-
-  <div id="canvas-wrap">
-    <canvas id="c"></canvas>
-    <div id="topbar">
-      <div class="controls">
-        <button class="ctrl-btn" onclick="toggleAnim()">Пуск / Стоп</button>
-        <button class="ctrl-btn" onclick="toggleExplode()">Разрез</button>
-        <button class="ctrl-btn" onclick="toggleXray()">Рентген</button>
-        <button class="ctrl-btn" onclick="resetView()">Сброс</button>
-      </div>
-      <div id="rpm-display">
-        <span>RPM: <span class="rpm-val" id="rpm-val">0</span></span>
-        <span>Скорость: <span class="rpm-val" id="speed-val">0</span> км/ч</span>
-        <span>Темп.: <span class="rpm-val" id="temp-val">20</span>&deg;C</span>
-      </div>
+<div id="panel">
+  <h1>Системы</h1>
+  <h2>Силовая установка</h2>
+  <button class="sbtn act" data-s="engine" onclick="sel('engine')"><span class="sdot" style="color:#ef4444"></span>Двигатель</button>
+  <button class="sbtn" data-s="fuel" onclick="sel('fuel')"><span class="sdot" style="color:#f59e0b"></span>Топливная</button>
+  <button class="sbtn" data-s="intake" onclick="sel('intake')"><span class="sdot" style="color:#a78bfa"></span>Впуск / Наддув</button>
+  <h2>Трансмиссия</h2>
+  <button class="sbtn" data-s="trans" onclick="sel('trans')"><span class="sdot" style="color:#3b82f6"></span>КПП</button>
+  <button class="sbtn" data-s="drive" onclick="sel('drive')"><span class="sdot" style="color:#6366f1"></span>Привод AWD</button>
+  <h2>Шасси</h2>
+  <button class="sbtn" data-s="susp" onclick="sel('susp')"><span class="sdot" style="color:#10b981"></span>Подвеска</button>
+  <button class="sbtn" data-s="steer" onclick="sel('steer')"><span class="sdot" style="color:#14b8a6"></span>Рулевое</button>
+  <button class="sbtn" data-s="brake" onclick="sel('brake')"><span class="sdot" style="color:#f43f5e"></span>Тормоза</button>
+  <h2>Обеспечение</h2>
+  <button class="sbtn" data-s="cool" onclick="sel('cool')"><span class="sdot" style="color:#06b6d4"></span>Охлаждение</button>
+  <button class="sbtn" data-s="oil" onclick="sel('oil')"><span class="sdot" style="color:#d97706"></span>Смазка</button>
+  <button class="sbtn" data-s="elec" onclick="sel('elec')"><span class="sdot" style="color:#eab308"></span>Электрика</button>
+  <button class="sbtn" data-s="exh" onclick="sel('exh')"><span class="sdot" style="color:#78716c"></span>Выхлоп</button>
+  <button class="sbtn" data-s="body" onclick="sel('body')"><span class="sdot" style="color:#475569"></span>Кузов</button>
+  <div id="si" class="sinfo"></div>
+</div>
+<div id="cw">
+  <canvas id="c"></canvas>
+  <div id="top">
+    <div class="ctrls">
+      <button class="cb on" id="btnRun" onclick="togRun()">&#9654; Двигатель</button>
+      <button class="cb" id="btnExp" onclick="togExp()">&#9878; Разрез</button>
+      <button class="cb" id="btnXr" onclick="togXr()">&#9783; Рентген</button>
+      <button class="cb" onclick="reset()">&#8634; Сброс</button>
     </div>
-    <div id="tooltip"></div>
-    <div id="legend">
-      <div class="legend-item"><span class="legend-color" style="background:#ef4444"></span>Двигатель</div>
-      <div class="legend-item"><span class="legend-color" style="background:#3b82f6"></span>Трансмиссия</div>
-      <div class="legend-item"><span class="legend-color" style="background:#10b981"></span>Подвеска</div>
-      <div class="legend-item"><span class="legend-color" style="background:#06b6d4"></span>Охлаждение</div>
-      <div class="legend-item"><span class="legend-color" style="background:#eab308"></span>Электрика</div>
-      <div class="legend-item"><span class="legend-color" style="background:#f59e0b"></span>Топливо</div>
-      <div class="legend-item"><span class="legend-color" style="background:#78716c"></span>Выхлоп</div>
+    <div id="hud">
+      <span>RPM <span class="hv" id="vRpm">0</span></span>
+      <span>Скор. <span class="hv" id="vSpd">0</span><small>км/ч</small></span>
+      <span>T&deg; <span class="hv" id="vTmp">20</span></span>
     </div>
   </div>
 </div>
-
+</div>
 <script>
-// ========== CORE ENGINE ==========
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-let W, H, cx, cy;
-let time = 0;
-let running = true;
-let exploded = false;
-let xray = false;
-let selectedSystem = 'engine';
-let rotAngle = 0.46;
-let tiltAngle = 0.55;
-let zoom = 1.0;
-let dragStart = null;
-let rpm = 0;
-let targetRpm = 3200;
-let engineTemp = 20;
-let speed = 0;
+// ============ RENDERER CORE ============
+const C=document.getElementById('c'),X=C.getContext('2d');
+let W,H,mx,my,t=0,run=1,expl=0,xray=0,cur='engine';
+let rY=0.52,rX=0.48,zm=1.6,drag=null;
+let rpm=0,spd=0,tmp=20;
+const PI=Math.PI,sin=Math.sin,cos=Math.cos,abs=Math.abs,min=Math.min,max=Math.max;
 
-function resize() {
-  const r = window.devicePixelRatio || 1;
-  W = canvas.parentElement.clientWidth;
-  H = canvas.parentElement.clientHeight;
-  canvas.width = W * r;
-  canvas.height = H * r;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  ctx.setTransform(r, 0, 0, r, 0, 0);
-  cx = W / 2;
-  cy = H / 2;
+function resize(){
+  const r=devicePixelRatio||1;
+  W=C.parentElement.clientWidth;H=C.parentElement.clientHeight;
+  C.width=W*r;C.height=H*r;C.style.width=W+'px';C.style.height=H+'px';
+  X.setTransform(r,0,0,r,0,0);mx=W/2;my=H/2;
 }
-window.addEventListener('resize', resize);
-resize();
+addEventListener('resize',resize);resize();
 
-// ========== ISOMETRIC TRANSFORM ==========
-function iso(x, y, z) {
-  const cosR = Math.cos(rotAngle), sinR = Math.sin(rotAngle);
-  const cosT = Math.cos(tiltAngle), sinT = Math.sin(tiltAngle);
-  let rx = x * cosR - y * sinR;
-  let ry = x * sinR + y * cosR;
-  let sx = rx * zoom;
-  let sy = (ry * sinT - z * cosT) * zoom;
-  return [cx + sx, cy + sy];
+// ============ 3D MATH ============
+// Full 3D->2D with rotation
+function proj(x,y,z){
+  // rotate around Y axis
+  let x1=x*cos(rY)-z*sin(rY), z1=x*sin(rY)+z*cos(rY);
+  // rotate around X axis
+  let y1=y*cos(rX)-z1*sin(rX), z2=y*sin(rX)+z1*cos(rX);
+  // isometric projection with slight perspective
+  const persp=800;
+  const scale=persp/(persp+z2)*zm;
+  return{x:mx+x1*scale,y:my+y1*scale,z:z2,s:scale};
+}
+function p3(x,y,z){const p=proj(x,y,z);return[p.x,p.y]}
+
+// Depth sort helper
+let drawCalls=[];
+function addDraw(zVal,sys,fn){
+  drawCalls.push({z:zVal,sys,fn});
+}
+function flushDraws(){
+  drawCalls.sort((a,b)=>a.z-b.z);
+  drawCalls.forEach(d=>d.fn());
+  drawCalls=[];
 }
 
-// ========== DRAWING HELPERS ==========
-function setAlpha(color, a) {
-  if (color.startsWith('#')) {
-    let r = parseInt(color.slice(1,3),16);
-    let g = parseInt(color.slice(3,5),16);
-    let b = parseInt(color.slice(5,7),16);
-    return `rgba(${r},${g},${b},${a})`;
-  }
-  return color;
+// ============ LIGHTING MODEL ============
+const lightDir={x:-.4,y:-.7,z:.5};
+(function normLight(){
+  const l=Math.sqrt(lightDir.x**2+lightDir.y**2+lightDir.z**2);
+  lightDir.x/=l;lightDir.y/=l;lightDir.z/=l;
+})();
+
+function shade(baseColor,nx,ny,nz){
+  const dot=max(0,nx*lightDir.x+ny*lightDir.y+nz*lightDir.z);
+  const ambient=.25,diffuse=.6,spec=.15;
+  const brightness=ambient+diffuse*dot+spec*Math.pow(dot,8);
+  const r=parseInt(baseColor.slice(1,3),16);
+  const g=parseInt(baseColor.slice(3,5),16);
+  const b=parseInt(baseColor.slice(5,7),16);
+  return`rgb(${min(255,r*brightness|0)},${min(255,g*brightness|0)},${min(255,b*brightness|0)})`;
 }
 
-function drawBox(x, y, z, w, h, d, color, sys, label) {
-  const isActive = sys === selectedSystem;
-  const alpha = xray ? (isActive ? 0.7 : 0.12) : (isActive ? 0.9 : 0.45);
-  const eo = exploded ? getExplodeOffset(sys) : {x:0,y:0,z:0};
-  const ex = x+eo.x, ey = y+eo.y, ez = z+eo.z;
+function rgba(hex,a){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return`rgba(${r},${g},${b},${a})`;
+}
 
-  const p = [
-    iso(ex, ey, ez),
-    iso(ex+w, ey, ez),
-    iso(ex+w, ey+h, ez),
-    iso(ex, ey+h, ez),
-    iso(ex, ey, ez+d),
-    iso(ex+w, ey, ez+d),
-    iso(ex+w, ey+h, ez+d),
-    iso(ex, ey+h, ez+d)
+// ============ EXPLODE ============
+function eo(sys){
+  if(!expl)return[0,0,0];
+  const d=120;
+  const m={
+    engine:[0,d*.6,0],fuel:[d,0,d*.3],intake:[-d*.5,d*.8,0],
+    trans:[0,0,d],drive:[0,-d*.5,d*.5],susp:[0,-d,0],
+    steer:[-d*.7,-d*.3,0],brake:[d*.4,-d*.6,0],cool:[-d,d*.4,0],
+    oil:[d*.3,d*.5,d*.3],elec:[0,d*1.2,0],exh:[d*.8,0,-d*.3],
+    body:[0,d*1.5,0]
+  };
+  return m[sys]||[0,0,0];
+}
+
+// ============ SHAPE BUILDERS ============
+// Draw a proper 3D box with 6 lit faces
+function box3d(ox,oy,oz,w,h,d,color,sys,label){
+  const isA=sys===cur;
+  const al=xray?(isA?.75:.06):(isA?.95:.35);
+  const e=eo(sys);
+  const cx=ox+e[0],cy=oy+e[1],cz=oz+e[2];
+
+  // 8 vertices
+  const v=[
+    [cx-w/2,cy-h/2,cz-d/2],[cx+w/2,cy-h/2,cz-d/2],
+    [cx+w/2,cy+h/2,cz-d/2],[cx-w/2,cy+h/2,cz-d/2],
+    [cx-w/2,cy-h/2,cz+d/2],[cx+w/2,cy-h/2,cz+d/2],
+    [cx+w/2,cy+h/2,cz+d/2],[cx-w/2,cy+h/2,cz+d/2]
+  ];
+  const p=v.map(q=>proj(q[0],q[1],q[2]));
+
+  // 6 faces: [indices, normal]
+  const faces=[
+    [[4,5,6,7],[0,0,1]],  // front +z
+    [[0,1,2,3],[0,0,-1]], // back -z
+    [[1,5,6,2],[1,0,0]],  // right +x
+    [[0,4,7,3],[-1,0,0]], // left -x
+    [[0,1,5,4],[0,-1,0]], // top -y
+    [[3,2,6,7],[0,1,0]]   // bottom +y
   ];
 
-  // Top face
-  ctx.beginPath();
-  ctx.moveTo(p[4][0],p[4][1]);
-  ctx.lineTo(p[5][0],p[5][1]);
-  ctx.lineTo(p[6][0],p[6][1]);
-  ctx.lineTo(p[7][0],p[7][1]);
-  ctx.closePath();
-  ctx.fillStyle = setAlpha(color, alpha);
-  ctx.fill();
-  if (isActive) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke(); }
+  // Sort faces by average z (painter's)
+  const sf=faces.map(f=>{
+    const avgZ=f[0].reduce((s,i)=>s+p[i].z,0)/4;
+    return{idx:f[0],n:f[1],avgZ};
+  }).sort((a,b)=>a.avgZ-b.avgZ);
 
-  // Right face
-  ctx.beginPath();
-  ctx.moveTo(p[1][0],p[1][1]);
-  ctx.lineTo(p[5][0],p[5][1]);
-  ctx.lineTo(p[6][0],p[6][1]);
-  ctx.lineTo(p[2][0],p[2][1]);
-  ctx.closePath();
-  ctx.fillStyle = setAlpha(color, alpha * 0.7);
-  ctx.fill();
-  if (isActive) ctx.stroke();
-
-  // Front face
-  ctx.beginPath();
-  ctx.moveTo(p[2][0],p[2][1]);
-  ctx.lineTo(p[6][0],p[6][1]);
-  ctx.lineTo(p[7][0],p[7][1]);
-  ctx.lineTo(p[3][0],p[3][1]);
-  ctx.closePath();
-  ctx.fillStyle = setAlpha(color, alpha * 0.5);
-  ctx.fill();
-  if (isActive) ctx.stroke();
-
-  // Label
-  if (isActive && label) {
-    const cp = iso(ex+w/2, ey+h/2, ez+d+8);
-    ctx.fillStyle = '#fff';
-    ctx.font = '11px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText(label, cp[0], cp[1]);
-  }
+  const zAvg=v.reduce((s,q)=>s+q[2],0)/8;
+  addDraw(proj(cx,cy,cz).z,sys,()=>{
+    sf.forEach(face=>{
+      const col=shade(color,face.n[0],face.n[1],face.n[2]);
+      X.beginPath();
+      face.idx.forEach((i,j)=>{
+        j===0?X.moveTo(p[i].x,p[i].y):X.lineTo(p[i].x,p[i].y);
+      });
+      X.closePath();
+      X.globalAlpha=al;
+      X.fillStyle=col;
+      X.fill();
+      if(isA){
+        X.strokeStyle=rgba('#c7d2fe',.5);
+        X.lineWidth=1;
+        X.stroke();
+      }
+    });
+    if(isA&&label){
+      const cp=proj(cx,cy-h/2-8,cz);
+      X.globalAlpha=1;
+      X.fillStyle='#fff';
+      X.font='bold 10px system-ui';
+      X.textAlign='center';
+      X.shadowColor=rgba(color,.6);
+      X.shadowBlur=8;
+      X.fillText(label,cp.x,cp.y);
+      X.shadowBlur=0;
+    }
+    X.globalAlpha=1;
+  });
 }
 
-function drawCylinder(x, y, z, r, h, color, sys, label, segments) {
-  const isActive = sys === selectedSystem;
-  const alpha = xray ? (isActive ? 0.65 : 0.1) : (isActive ? 0.85 : 0.4);
-  const eo = exploded ? getExplodeOffset(sys) : {x:0,y:0,z:0};
-  const ex = x+eo.x, ey = y+eo.y, ez = z+eo.z;
-  segments = segments || 16;
+// Proper 3D cylinder with lit surface
+function cyl3d(ox,oy,oz,r,h,color,sys,label,axis){
+  axis=axis||'y'; // axis along which cylinder extends
+  const isA=sys===cur;
+  const al=xray?(isA?.7:.06):(isA?.9:.35);
+  const e=eo(sys);
+  const cx=ox+e[0],cy=oy+e[1],cz=oz+e[2];
+  const seg=20;
 
-  // Body
-  ctx.beginPath();
-  for (let i = 0; i <= segments; i++) {
-    const a = (i / segments) * Math.PI * 2;
-    const px = ex + Math.cos(a) * r;
-    const py = ey + Math.sin(a) * r;
-    const pt = iso(px, py, ez);
-    if (i === 0) ctx.moveTo(pt[0], pt[1]);
-    else ctx.lineTo(pt[0], pt[1]);
-  }
-  for (let i = segments; i >= 0; i--) {
-    const a = (i / segments) * Math.PI * 2;
-    const px = ex + Math.cos(a) * r;
-    const py = ey + Math.sin(a) * r;
-    const pt = iso(px, py, ez + h);
-    ctx.lineTo(pt[0], pt[1]);
-  }
-  ctx.closePath();
-  ctx.fillStyle = setAlpha(color, alpha * 0.6);
-  ctx.fill();
-  if (isActive) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke(); }
+  const zAvg=proj(cx,cy,cz).z;
+  addDraw(zAvg,sys,()=>{
+    X.globalAlpha=al;
 
-  // Top ellipse
-  ctx.beginPath();
-  for (let i = 0; i <= segments; i++) {
-    const a = (i / segments) * Math.PI * 2;
-    const px = ex + Math.cos(a) * r;
-    const py = ey + Math.sin(a) * r;
-    const pt = iso(px, py, ez + h);
-    if (i === 0) ctx.moveTo(pt[0], pt[1]);
-    else ctx.lineTo(pt[0], pt[1]);
-  }
-  ctx.closePath();
-  ctx.fillStyle = setAlpha(color, alpha);
-  ctx.fill();
-  if (isActive) ctx.stroke();
+    // Generate ring points
+    function ring(offset){
+      const pts=[];
+      for(let i=0;i<=seg;i++){
+        const a=(i/seg)*PI*2;
+        let px,py,pz;
+        if(axis==='y'){
+          px=cx+cos(a)*r; py=cy+offset; pz=cz+sin(a)*r;
+        }else if(axis==='x'){
+          px=cx+offset; py=cy+cos(a)*r; pz=cz+sin(a)*r;
+        }else{
+          px=cx+cos(a)*r; py=cy+sin(a)*r; pz=cz+offset;
+        }
+        pts.push(proj(px,py,pz));
+      }
+      return pts;
+    }
 
-  if (isActive && label) {
-    const cp = iso(ex, ey, ez + h + 10);
-    ctx.fillStyle = '#fff';
-    ctx.font = '10px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText(label, cp[0], cp[1]);
-  }
+    const top=ring(-h/2),bot=ring(h/2);
+
+    // Side surface with gradient
+    for(let i=0;i<seg;i++){
+      const a=(i/seg)*PI*2;
+      let nx,ny,nz;
+      if(axis==='y'){nx=cos(a);ny=0;nz=sin(a);}
+      else if(axis==='x'){nx=0;ny=cos(a);nz=sin(a);}
+      else{nx=cos(a);ny=sin(a);nz=0;}
+
+      const col=shade(color,nx,ny,nz);
+      X.beginPath();
+      X.moveTo(top[i].x,top[i].y);
+      X.lineTo(top[i+1].x,top[i+1].y);
+      X.lineTo(bot[i+1].x,bot[i+1].y);
+      X.lineTo(bot[i].x,bot[i].y);
+      X.closePath();
+      X.fillStyle=col;
+      X.fill();
+    }
+
+    // Top cap
+    X.beginPath();
+    top.forEach((p,i)=>i===0?X.moveTo(p.x,p.y):X.lineTo(p.x,p.y));
+    X.closePath();
+    let tn;
+    if(axis==='y')tn=[0,-1,0];else if(axis==='x')tn=[-1,0,0];else tn=[0,0,1];
+    X.fillStyle=shade(color,...tn);
+    X.fill();
+
+    if(isA){
+      X.strokeStyle=rgba('#c7d2fe',.4);
+      X.lineWidth=.8;
+      X.stroke();
+    }
+
+    // Bottom cap
+    X.beginPath();
+    bot.forEach((p,i)=>i===0?X.moveTo(p.x,p.y):X.lineTo(p.x,p.y));
+    X.closePath();
+    if(axis==='y')tn=[0,1,0];else if(axis==='x')tn=[1,0,0];else tn=[0,0,-1];
+    X.fillStyle=shade(color,...tn);
+    X.fill();
+
+    if(isA&&label){
+      let lp;
+      if(axis==='y')lp=proj(cx,cy-h/2-10,cz);
+      else if(axis==='x')lp=proj(cx-h/2-10,cy,cz);
+      else lp=proj(cx,cy,cz+h/2+10);
+      X.globalAlpha=1;
+      X.fillStyle='#fff';
+      X.font='bold 9px system-ui';
+      X.textAlign='center';
+      X.shadowColor=rgba(color,.5);X.shadowBlur=6;
+      X.fillText(label,lp.x,lp.y);
+      X.shadowBlur=0;
+    }
+    X.globalAlpha=1;
+  });
 }
 
-function drawLine(x1,y1,z1, x2,y2,z2, color, sys, width) {
-  const isActive = sys === selectedSystem;
-  const alpha = xray ? (isActive ? 0.8 : 0.08) : (isActive ? 0.9 : 0.3);
-  const eo = exploded ? getExplodeOffset(sys) : {x:0,y:0,z:0};
-  const p1 = iso(x1+eo.x, y1+eo.y, z1+eo.z);
-  const p2 = iso(x2+eo.x, y2+eo.y, z2+eo.z);
-  ctx.beginPath();
-  ctx.moveTo(p1[0], p1[1]);
-  ctx.lineTo(p2[0], p2[1]);
-  ctx.strokeStyle = setAlpha(color, alpha);
-  ctx.lineWidth = (width||2) * (isActive ? 1.5 : 1);
-  ctx.stroke();
-}
+// 3D pipe with flow animation and proper thickness
+function pipe3d(pts,color,sys,w,showFlow){
+  const isA=sys===cur;
+  const al=xray?(isA?.8:.05):(isA?.9:.25);
+  const e=eo(sys);
+  if(pts.length<2)return;
+  const ep=pts.map(p=>[p[0]+e[0],p[1]+e[1],p[2]+e[2]]);
+  const pp=ep.map(p=>proj(p[0],p[1],p[2]));
+  const avgZ=pp.reduce((s,p)=>s+p.z,0)/pp.length;
 
-function drawPipe(points, color, sys, width) {
-  const isActive = sys === selectedSystem;
-  const alpha = xray ? (isActive ? 0.8 : 0.08) : (isActive ? 0.9 : 0.3);
-  const eo = exploded ? getExplodeOffset(sys) : {x:0,y:0,z:0};
-  if (points.length < 2) return;
-  ctx.beginPath();
-  const p0 = iso(points[0][0]+eo.x, points[0][1]+eo.y, points[0][2]+eo.z);
-  ctx.moveTo(p0[0], p0[1]);
-  for (let i = 1; i < points.length; i++) {
-    const p = iso(points[i][0]+eo.x, points[i][1]+eo.y, points[i][2]+eo.z);
-    ctx.lineTo(p[0], p[1]);
-  }
-  ctx.strokeStyle = setAlpha(color, alpha);
-  ctx.lineWidth = (width||3) * (isActive ? 1.8 : 1);
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.stroke();
+  addDraw(avgZ,sys,()=>{
+    X.globalAlpha=al;
+    X.beginPath();
+    pp.forEach((p,i)=>i===0?X.moveTo(p.x,p.y):X.lineTo(p.x,p.y));
+    X.strokeStyle=isA?color:rgba(color,.6);
+    X.lineWidth=(w||3)*(isA?2.2:1)*zm*.6;
+    X.lineCap='round';X.lineJoin='round';
+    if(isA){X.shadowColor=rgba(color,.4);X.shadowBlur=8;}
+    X.stroke();
+    X.shadowBlur=0;
 
-  // Animated flow dots
-  if (isActive && running) {
-    const totalLen = points.length - 1;
-    for (let d = 0; d < 3; d++) {
-      const t = ((time * 2 + d * 0.33) % 1);
-      const idx = Math.floor(t * totalLen);
-      const frac = t * totalLen - idx;
-      if (idx < totalLen) {
-        const pa = iso(
-          points[idx][0]+eo.x + (points[idx+1][0]-points[idx][0])*frac,
-          points[idx][1]+eo.y + (points[idx+1][1]-points[idx][1])*frac,
-          points[idx][2]+eo.z + (points[idx+1][2]-points[idx][2])*frac
-        );
-        ctx.beginPath();
-        ctx.arc(pa[0], pa[1], 3, 0, Math.PI*2);
-        ctx.fillStyle = setAlpha(color, 0.95);
-        ctx.fill();
+    // Thinner highlight line on top
+    if(isA){
+      X.beginPath();
+      pp.forEach((p,i)=>i===0?X.moveTo(p.x,p.y):X.lineTo(p.x,p.y));
+      X.strokeStyle=rgba('#ffffff',.2);
+      X.lineWidth=(w||3)*zm*.3;
+      X.stroke();
+    }
+
+    // Animated flow particles
+    if(isA&&run&&showFlow!==false){
+      const len=ep.length-1;
+      for(let d=0;d<4;d++){
+        const ft=((t*1.5+d*.25)%1);
+        const idx=ft*len|0;
+        const fr=ft*len-idx;
+        if(idx<len){
+          const fx=ep[idx][0]+(ep[idx+1][0]-ep[idx][0])*fr;
+          const fy=ep[idx][1]+(ep[idx+1][1]-ep[idx][1])*fr;
+          const fz=ep[idx][2]+(ep[idx+1][2]-ep[idx][2])*fr;
+          const fp=proj(fx,fy,fz);
+          X.globalAlpha=.9;
+          X.beginPath();
+          X.arc(fp.x,fp.y,3*zm*.6,0,PI*2);
+          X.fillStyle='#fff';
+          X.shadowColor=color;X.shadowBlur=10;
+          X.fill();
+          X.shadowBlur=0;
+        }
       }
     }
-  }
-}
-
-function drawWheel(x, y, z, radius, sys) {
-  const isActive = sys === selectedSystem;
-  const alpha = xray ? (isActive ? 0.7 : 0.1) : (isActive ? 0.85 : 0.5);
-  const eo = exploded ? getExplodeOffset(sys) : {x:0,y:0,z:0};
-  const ex = x+eo.x, ey = y+eo.y, ez = z+eo.z;
-
-  // Tire outer
-  const segs = 20;
-  ctx.beginPath();
-  for (let i = 0; i <= segs; i++) {
-    const a = (i/segs) * Math.PI * 2 + (running ? time * 3 : 0);
-    const px = ex + Math.cos(a)*radius;
-    const pz = ez + Math.sin(a)*radius;
-    const pt = iso(px, ey, pz);
-    if (i===0) ctx.moveTo(pt[0],pt[1]);
-    else ctx.lineTo(pt[0],pt[1]);
-  }
-  ctx.closePath();
-  ctx.fillStyle = setAlpha('#1e1e2e', alpha);
-  ctx.fill();
-  ctx.strokeStyle = setAlpha('#374151', alpha);
-  ctx.lineWidth = isActive ? 2 : 1;
-  ctx.stroke();
-
-  // Hub
-  ctx.beginPath();
-  for (let i = 0; i <= segs; i++) {
-    const a = (i/segs) * Math.PI * 2;
-    const px = ex + Math.cos(a)*radius*0.4;
-    const pz = ez + Math.sin(a)*radius*0.4;
-    const pt = iso(px, ey, pz);
-    if (i===0) ctx.moveTo(pt[0],pt[1]);
-    else ctx.lineTo(pt[0],pt[1]);
-  }
-  ctx.closePath();
-  ctx.fillStyle = setAlpha('#4b5563', alpha);
-  ctx.fill();
-
-  // Spokes
-  const spokeAngle = running ? time * 5 : 0;
-  for (let i = 0; i < 5; i++) {
-    const a = spokeAngle + (i/5) * Math.PI * 2;
-    const inner = iso(ex + Math.cos(a)*radius*0.15, ey, ez + Math.sin(a)*radius*0.15);
-    const outer = iso(ex + Math.cos(a)*radius*0.75, ey, ez + Math.sin(a)*radius*0.75);
-    ctx.beginPath();
-    ctx.moveTo(inner[0], inner[1]);
-    ctx.lineTo(outer[0], outer[1]);
-    ctx.strokeStyle = setAlpha('#9ca3af', alpha);
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
-
-  // Brake disc (inside wheel)
-  if (sys === 'brakes' || selectedSystem === 'brakes') {
-    ctx.beginPath();
-    for (let i = 0; i <= segs; i++) {
-      const a = (i/segs) * Math.PI * 2;
-      const px = ex + Math.cos(a)*radius*0.55;
-      const pz = ez + Math.sin(a)*radius*0.55;
-      const pt = iso(px, ey - 2, pz);
-      if (i===0) ctx.moveTo(pt[0],pt[1]);
-      else ctx.lineTo(pt[0],pt[1]);
-    }
-    ctx.closePath();
-    const brakeAlpha = selectedSystem === 'brakes' ? 0.6 : 0.2;
-    ctx.fillStyle = `rgba(244,63,94,${brakeAlpha})`;
-    ctx.fill();
-
-    // Brake caliper
-    const calP = iso(ex + radius*0.45, ey - 4, ez);
-    ctx.beginPath();
-    ctx.arc(calP[0], calP[1], 6, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(244,63,94,${brakeAlpha + 0.2})`;
-    ctx.fill();
-  }
-}
-
-// ========== EXPLODE OFFSETS ==========
-function getExplodeOffset(sys) {
-  const d = 80;
-  const offsets = {
-    engine: {x:0, y:0, z: d*0.7},
-    fuel: {x: -d, y: d*0.5, z: 0},
-    intake: {x: 0, y: -d*0.6, z: d*0.5},
-    transmission: {x: d*0.5, y: 0, z: 0},
-    drivetrain: {x: d*0.3, y: 0, z: -d*0.5},
-    suspension: {x: 0, y: 0, z: -d},
-    steering: {x: -d*0.6, y: -d*0.5, z: 0},
-    brakes: {x: 0, y: d*0.8, z: -d*0.3},
-    cooling: {x: -d, y: 0, z: d*0.3},
-    oil: {x: d*0.3, y: d*0.3, z: d*0.5},
-    electrical: {x: 0, y: -d, z: d*0.8},
-    exhaust: {x: d, y: d*0.5, z: -d*0.4},
-    body: {x: 0, y: 0, z: d*1.3}
-  };
-  return offsets[sys] || {x:0,y:0,z:0};
-}
-
-// ========== SYSTEM INFO ==========
-const systemInfo = {
-  engine: {
-    name: 'Двигатель внутреннего сгорания',
-    desc: 'Рядный 4-цилиндровый, 2.0L турбо',
-    stats: [
-      ['Мощность', '250 л.с.'],
-      ['Крутящий момент', '350 Нм'],
-      ['Степень сжатия', '10.5:1'],
-      ['Порядок работы', '1-3-4-2'],
-      ['Макс. обороты', '7000 об/мин'],
-      ['Тип ГРМ', 'DOHC 16V']
-    ]
-  },
-  fuel: {
-    name: 'Топливная система',
-    desc: 'Прямой впрыск, электронное управление',
-    stats: [
-      ['Давление рампы', '200 бар'],
-      ['Форсунки', '4 пьезо'],
-      ['Объём бака', '55 л'],
-      ['Насос', 'Электрический'],
-      ['Фильтр', 'Тонкой очистки'],
-      ['Расход', '8.5 л/100км']
-    ]
-  },
-  intake: {
-    name: 'Система впуска / выпуска',
-    desc: 'Турбонаддув с интеркулером',
-    stats: [
-      ['Турбина', 'Twin-scroll'],
-      ['Давление наддува', '1.2 бар'],
-      ['Интеркулер', 'Воздух-воздух'],
-      ['Фильтр', 'Панельный K&N'],
-      ['Дроссель', 'Электронный'],
-      ['Впуск. коллектор', 'Переменной длины']
-    ]
-  },
-  transmission: {
-    name: 'Коробка переключения передач',
-    desc: '7-ступенчатая DCT (робот)',
-    stats: [
-      ['Тип', 'Двойное сцепление'],
-      ['Передачи', '7 + задняя'],
-      ['Сцепление', 'Мокрое, многодиск.'],
-      ['Переключение', '< 0.2 сек'],
-      ['Масло', 'ATF DCT III'],
-      ['Управление', 'Мехатроник']
-    ]
-  },
-  drivetrain: {
-    name: 'Привод и карданные валы',
-    desc: 'Полный привод AWD с муфтой Haldex',
-    stats: [
-      ['Тип', 'Постоянный полный'],
-      ['Распределение', '40/60 перед/зад'],
-      ['Муфта', 'Электронная Haldex'],
-      ['Дифференциал', 'Torsen'],
-      ['ШРУС', 'Трипод + шарики'],
-      ['Кардан', 'Двухопорный']
-    ]
-  },
-  suspension: {
-    name: 'Подвеска',
-    desc: 'Передняя — McPherson, задняя — многорычажная',
-    stats: [
-      ['Перед', 'McPherson'],
-      ['Зад', 'Многорычажная'],
-      ['Амортизаторы', 'Адаптивные (CDC)'],
-      ['Пружины', 'Бочкообразные'],
-      ['Стабилизатор', 'Перед + Зад'],
-      ['Ход подвески', '150 мм']
-    ]
-  },
-  steering: {
-    name: 'Рулевое управление',
-    desc: 'Электроусилитель с переменным усилием',
-    stats: [
-      ['Тип', 'Реечный'],
-      ['Усилитель', 'Электрический (EPS)'],
-      ['Обороты руля', '2.7 оборота'],
-      ['Передаточное ч.', '14.5:1'],
-      ['Адаптивность', 'Скоростная'],
-      ['Рулевые тяги', 'С наконечниками']
-    ]
-  },
-  brakes: {
-    name: 'Тормозная система',
-    desc: 'Вентилируемые диски, ABS + ESP',
-    stats: [
-      ['Перед', 'Вент. диски 345мм'],
-      ['Зад', 'Вент. диски 310мм'],
-      ['Суппорты', '4-поршн. Brembo'],
-      ['ABS', 'Bosch 9.3'],
-      ['ESP', 'С торм. вектор.'],
-      ['Колодки', 'Керамич. композ.']
-    ]
-  },
-  cooling: {
-    name: 'Система охлаждения',
-    desc: 'Жидкостная с термостатом и 2 контурами',
-    stats: [
-      ['Радиатор', 'Алюмин. 2-рядный'],
-      ['Помпа', 'Электрическая'],
-      ['Термостат', 'Электронный 87°C'],
-      ['Антифриз', 'G13 (6.5 л)'],
-      ['Вентилятор', '2× электро'],
-      ['Контуры', 'Двигатель + Турбо']
-    ]
-  },
-  oil: {
-    name: 'Система смазки',
-    desc: 'Полнопоточная с масляным охладителем',
-    stats: [
-      ['Масло', '5W-40 синтетика'],
-      ['Объём', '4.5 л'],
-      ['Давление', '2-5 бар'],
-      ['Насос', 'Шестерённый'],
-      ['Фильтр', 'Полнопоточный'],
-      ['Охладитель', 'Пластинчатый']
-    ]
-  },
-  electrical: {
-    name: 'Электрическая система',
-    desc: '12V бортовая сеть + 48V mild-hybrid',
-    stats: [
-      ['Батарея', '12V 80Ah AGM'],
-      ['Генератор', '48V BSG 12кВт'],
-      ['Шина данных', 'CAN-FD + LIN'],
-      ['ЭБУ', 'Bosch MED17'],
-      ['Датчики', '> 80 шт'],
-      ['Проводка', '~ 2.5 км']
-    ]
-  },
-  exhaust: {
-    name: 'Выхлопная система',
-    desc: 'Каталитический нейтрализатор + GPF',
-    stats: [
-      ['Коллектор', 'Литой чугунный'],
-      ['Катализатор', 'Трёхкомпонентный'],
-      ['GPF', 'Сажевый фильтр'],
-      ['Лямбда-зонды', '2 (до/после)'],
-      ['Глушитель', 'Резонатор + задний'],
-      ['Клапан', 'Электронный (спорт)']
-    ]
-  },
-  body: {
-    name: 'Кузов / Несущая конструкция',
-    desc: 'Несущий кузов, высокопрочная сталь + алюминий',
-    stats: [
-      ['Тип', 'Несущий монокок'],
-      ['Материалы', 'Сталь/Алюм./Композ.'],
-      ['Жёсткость', '28000 Нм/°'],
-      ['Масса', '1450 кг'],
-      ['Cd', '0.28'],
-      ['Зоны деформации', 'Перед + Зад']
-    ]
-  }
-};
-
-function selectSystem(sys) {
-  selectedSystem = sys;
-  document.querySelectorAll('.system-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.sys === sys);
+    X.globalAlpha=1;
   });
-  const info = systemInfo[sys];
-  if (info) {
-    let html = `<strong>${info.name}</strong><br><span style="color:#60a5fa">${info.desc}</span><br><br>`;
-    info.stats.forEach(s => {
-      html += `<div class="stat-row"><span>${s[0]}</span><span class="stat-val">${s[1]}</span></div>`;
-    });
-    document.getElementById('sys-info').innerHTML = html;
-  }
 }
 
-// ========== DRAW ALL SYSTEMS ==========
-function drawGrid() {
-  ctx.globalAlpha = 0.08;
-  const step = 40, count = 12;
-  for (let i = -count; i <= count; i++) {
-    const p1 = iso(i*step, -count*step, 0);
-    const p2 = iso(i*step, count*step, 0);
-    ctx.beginPath(); ctx.moveTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]);
-    ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 0.5; ctx.stroke();
-    const p3 = iso(-count*step, i*step, 0);
-    const p4 = iso(count*step, i*step, 0);
-    ctx.beginPath(); ctx.moveTo(p3[0],p3[1]); ctx.lineTo(p4[0],p4[1]);
-    ctx.stroke();
-  }
-  ctx.globalAlpha = 1;
+// Sphere approximation
+function sphere3d(ox,oy,oz,r,color,sys,label){
+  const isA=sys===cur;
+  const al=xray?(isA?.7:.06):(isA?.85:.3);
+  const e=eo(sys);
+  const cx=ox+e[0],cy=oy+e[1],cz=oz+e[2];
+  const p=proj(cx,cy,cz);
+
+  addDraw(p.z,sys,()=>{
+    X.globalAlpha=al;
+    const sr=r*p.s;
+    const g=X.createRadialGradient(p.x-sr*.3,p.y-sr*.3,sr*.1,p.x,p.y,sr);
+    const rc=parseInt(color.slice(1,3),16),gc=parseInt(color.slice(3,5),16),bc=parseInt(color.slice(5,7),16);
+    g.addColorStop(0,`rgba(${min(255,rc+80)},${min(255,gc+80)},${min(255,bc+80)},1)`);
+    g.addColorStop(.5,color);
+    g.addColorStop(1,`rgba(${rc*.4|0},${gc*.4|0},${bc*.4|0},1)`);
+    X.beginPath();X.arc(p.x,p.y,sr,0,PI*2);
+    X.fillStyle=g;X.fill();
+    if(isA){X.strokeStyle=rgba('#c7d2fe',.5);X.lineWidth=1;X.stroke();}
+
+    if(isA&&label){
+      X.globalAlpha=1;
+      X.fillStyle='#fff';X.font='bold 9px system-ui';X.textAlign='center';
+      X.shadowColor=rgba(color,.5);X.shadowBlur=6;
+      X.fillText(label,p.x,p.y-sr-6);
+      X.shadowBlur=0;
+    }
+    X.globalAlpha=1;
+  });
 }
 
-function drawBody() {
-  // Main body shell (simplified sedan shape)
-  // Floor pan
-  drawBox(-150, -70, 0, 300, 140, 5, '#475569', 'body', 'Днище');
-  // Side sills
-  drawBox(-150, -72, 5, 300, 4, 25, '#64748b', 'body', '');
-  drawBox(-150, 68, 5, 300, 4, 25, '#64748b', 'body', '');
-  // Front subframe
-  drawBox(-170, -55, 2, 30, 110, 18, '#64748b', 'body', 'Подрамник передний');
-  // Rear subframe
-  drawBox(130, -50, 2, 30, 100, 15, '#64748b', 'body', 'Подрамник задний');
+// 3D Wheel (torus-like)
+function wheel3d(ox,oy,oz,R,sys){
+  const isA=sys===cur||cur==='brake';
+  const al=xray?(isA?.6:.08):(isA?.9:.5);
+  const e=eo(sys);
+  const cx=ox+e[0],cy=oy+e[1],cz=oz+e[2];
+  const p=proj(cx,cy,cz);
+
+  addDraw(p.z,sys,()=>{
+    X.globalAlpha=al;
+    const seg=24;
+    const tireW=R*.35;
+
+    // Tire - draw as thick ellipse
+    const pts=[];
+    for(let i=0;i<=seg;i++){
+      const a=(i/seg)*PI*2+(run?t*4:0)*.0;
+      const px=cx,py=cy+cos(a)*R,pz=cz+sin(a)*R;
+      pts.push(proj(px,py,pz));
+    }
+
+    // Filled tire shape
+    X.beginPath();
+    pts.forEach((pt,i)=>i===0?X.moveTo(pt.x,pt.y):X.lineTo(pt.x,pt.y));
+    X.closePath();
+    const g=X.createRadialGradient(p.x,p.y,R*p.s*.2,p.x,p.y,R*p.s);
+    g.addColorStop(0,'#3a3a4a');
+    g.addColorStop(.6,'#1a1a2a');
+    g.addColorStop(1,'#0a0a15');
+    X.fillStyle=g;
+    X.fill();
+    X.strokeStyle='rgba(60,60,80,.6)';
+    X.lineWidth=2;
+    X.stroke();
+
+    // Hub/rim
+    const hub=[];
+    for(let i=0;i<=seg;i++){
+      const a=(i/seg)*PI*2;
+      const py=cy+cos(a)*R*.45,pz=cz+sin(a)*R*.45;
+      hub.push(proj(cx,py,pz));
+    }
+    X.beginPath();
+    hub.forEach((pt,i)=>i===0?X.moveTo(pt.x,pt.y):X.lineTo(pt.x,pt.y));
+    X.closePath();
+    const hg=X.createRadialGradient(p.x-R*p.s*.1,p.y-R*p.s*.1,2,p.x,p.y,R*p.s*.45);
+    hg.addColorStop(0,'#b0b0c0');
+    hg.addColorStop(.5,'#707080');
+    hg.addColorStop(1,'#404050');
+    X.fillStyle=hg;
+    X.fill();
+
+    // Spokes
+    const spokeAng=run?t*6:0;
+    for(let i=0;i<5;i++){
+      const a=spokeAng+(i/5)*PI*2;
+      const ip=proj(cx,cy+cos(a)*R*.1,cz+sin(a)*R*.1);
+      const op=proj(cx,cy+cos(a)*R*.4,cz+sin(a)*R*.4);
+      X.beginPath();X.moveTo(ip.x,ip.y);X.lineTo(op.x,op.y);
+      X.strokeStyle='rgba(180,180,200,.7)';X.lineWidth=2.5*zm*.6;
+      X.stroke();
+    }
+
+    // Center cap
+    X.beginPath();X.arc(p.x,p.y,R*p.s*.12,0,PI*2);
+    X.fillStyle='#555565';X.fill();
+
+    // Brake disc (visible behind wheel)
+    if(cur==='brake'){
+      const bd=[];
+      for(let i=0;i<=seg;i++){
+        const a=(i/seg)*PI*2;
+        const py=cy+cos(a)*R*.55,pz=cz+sin(a)*R*.55;
+        bd.push(proj(cx+(ox<0?-3:3),py,pz));
+      }
+      X.globalAlpha=.7;
+      X.beginPath();
+      bd.forEach((pt,i)=>i===0?X.moveTo(pt.x,pt.y):X.lineTo(pt.x,pt.y));
+      X.closePath();
+      X.fillStyle='rgba(244,63,94,.4)';X.fill();
+      X.strokeStyle='rgba(244,63,94,.6)';X.lineWidth=1.5;X.stroke();
+
+      // Caliper
+      const cp=proj(cx+(ox<0?-5:5),cy+R*.45,cz);
+      X.beginPath();X.arc(cp.x,cp.y,6*zm*.6,0,PI*2);
+      X.fillStyle='rgba(244,63,94,.8)';X.fill();
+      X.fillStyle='#fff';X.font='bold 7px system-ui';X.textAlign='center';
+      X.fillText('Суппорт',cp.x,cp.y-10);
+    }
+
+    X.globalAlpha=1;
+  });
+}
+
+// ============ CAR BODY (smooth shape) ============
+function drawBody(){
+  // --- Floor platform ---
+  box3d(0,25,0, 340,6,130, '#37415180','body','');
+
+  // --- Main lower body ---
+  box3d(0,10,0, 330,25,125, '#334155','body','Монокок');
+
+  // --- Front fenders ---
+  box3d(-120,0,55, 60,18,20, '#3d4f6a','body','');
+  box3d(-120,0,-55, 60,18,20, '#3d4f6a','body','');
+
+  // --- Rear fenders ---
+  box3d(110,0,55, 55,18,22, '#3d4f6a','body','');
+  box3d(110,0,-55, 55,18,22, '#3d4f6a','body','');
+
+  // --- Engine bay ---
+  box3d(-115,5,0, 80,20,100, '#2d3a4f','body','Моторный отсек');
+
+  // --- Cabin ---
   // A-pillars
-  drawBox(-60, -72, 30, 5, 4, 55, '#475569', 'body', '');
-  drawBox(-60, 68, 30, 5, 4, 55, '#475569', 'body', '');
+  box3d(-52,-22,52, 5,40,5, '#2a3548','body','');
+  box3d(-52,-22,-52, 5,40,5, '#2a3548','body','');
   // B-pillars
-  drawBox(10, -72, 30, 5, 4, 55, '#475569', 'body', '');
-  drawBox(10, 68, 30, 5, 4, 55, '#475569', 'body', '');
+  box3d(15,-22,52, 5,40,5, '#2a3548','body','');
+  box3d(15,-22,-52, 5,40,5, '#2a3548','body','');
   // C-pillars
-  drawBox(80, -72, 30, 5, 4, 50, '#475569', 'body', '');
-  drawBox(80, 68, 30, 5, 4, 50, '#475569', 'body', '');
-  // Roof
-  drawBox(-58, -68, 85, 136, 136, 4, '#334155', 'body', 'Крыша');
-  // Hood
-  drawBox(-155, -65, 32, 95, 130, 3, '#334155', 'body', 'Капот');
-  // Trunk
-  drawBox(85, -60, 30, 60, 120, 3, '#334155', 'body', 'Багажник');
-  // Windshield
-  drawBox(-60, -66, 35, 3, 132, 48, '#1e3a5f', 'body', 'Лобовое стекло');
-  // Rear window
-  drawBox(80, -62, 33, 3, 124, 44, '#1e3a5f', 'body', '');
-  // Firewall
-  drawBox(-65, -68, 5, 5, 136, 30, '#4b5563', 'body', 'Моторный щит');
+  box3d(75,-18,50, 5,35,5, '#2a3548','body','');
+  box3d(75,-18,-50, 5,35,5, '#2a3548','body','');
+
+  // --- Roof ---
+  box3d(12,-42,0, 125,4,100, '#283040','body','Крыша');
+
+  // --- Windshield ---
+  box3d(-48,-25,0, 4,32,96, '#1a3050','body','Лобовое');
+
+  // --- Rear window ---
+  box3d(72,-23,0, 4,28,90, '#1a3050','body','');
+
+  // --- Hood ---
+  box3d(-115,-4,0, 80,3,100, '#2a3852','body','Капот');
+
+  // --- Trunk ---
+  box3d(110,-2,0, 50,3,95, '#2a3852','body','Багажник');
+
+  // --- Bumpers ---
+  box3d(-162,15,0, 15,18,110, '#1e2838','body','Бампер передний');
+  box3d(148,15,0, 15,18,105, '#1e2838','body','Бампер задний');
+
+  // --- Headlights ---
+  sphere3d(-158,5,38, 8,'#fef08a','body','Фара L');
+  sphere3d(-158,5,-38, 8,'#fef08a','body','Фара R');
+
+  // --- Taillights ---
+  sphere3d(153,5,40, 6,'#ef4444','body','');
+  sphere3d(153,5,-40, 6,'#ef4444','body','');
+
+  // --- Side mirrors ---
+  box3d(-45,-15,68, 8,6,5, '#2a3548','body','');
+  box3d(-45,-15,-68, 8,6,5, '#2a3548','body','');
+
+  // --- Firewall ---
+  box3d(-70,5,0, 5,30,110, '#384860','body','Моторный щит');
 }
 
-function drawEngine() {
-  const t = time;
-  // Engine block
-  drawBox(-140, -30, 10, 60, 60, 45, '#ef4444', 'engine', 'Блок цилиндров');
-  // Cylinder head
-  drawBox(-138, -28, 55, 56, 56, 15, '#dc2626', 'engine', 'ГБЦ');
+// ============ ENGINE ============
+function drawEngine(){
+  // Block
+  box3d(-110,-2,0, 55,40,50, '#dc2626','engine','Блок цилиндров');
+  // Head
+  box3d(-110,-26,0, 52,8,48, '#ef4444','engine','ГБЦ');
   // Valve cover
-  drawBox(-136, -26, 70, 52, 52, 8, '#b91c1c', 'engine', 'Крышка клапанов');
+  box3d(-110,-32,0, 50,4,46, '#b91c1c','engine','Крышка клапанов');
 
-  // 4 Cylinders (pistons moving)
-  for (let i = 0; i < 4; i++) {
-    const phase = (t * 4 + i * 0.25) % 1;
-    const pistonZ = 15 + Math.sin(phase * Math.PI * 2) * 10;
-    const cx = -132 + i * 13;
-    drawCylinder(cx, 0, pistonZ, 5, 18, '#fca5a5', 'engine', i === 0 ? 'Поршни' : '', 10);
+  // 4 Cylinders with animated pistons
+  for(let i=0;i<4;i++){
+    const phase=(t*5+i*.25)%1;
+    const py=-8+sin(phase*PI*2)*8;
+    cyl3d(-125+i*12,py,0, 5,16, '#fca5a5','engine',i===0?'Поршень':'','y');
   }
 
   // Crankshaft
-  const crankRot = t * 6;
-  for (let i = 0; i < 5; i++) {
-    drawCylinder(-135 + i*12, 0, 10 + Math.sin(crankRot + i)*2, 3, 3, '#fbbf24', 'engine', i===2?'Коленвал':'', 8);
-  }
-  drawLine(-135, 0, 12, -85, 0, 12, '#fbbf24', 'engine', 2);
-
-  // Timing belt
-  drawLine(-136, -26, 65, -136, -26, 15, '#9ca3af', 'engine', 1);
-
-  // Oil pan
-  drawBox(-142, -32, 3, 64, 64, 8, '#d97706', 'oil', 'Масляный поддон');
-
-  // Turbocharger
-  const turboSpin = running ? t * 15 : 0;
-  drawCylinder(-145, 30, 35, 12, 15, '#a78bfa', 'intake', 'Турбокомпрессор', 12);
-  // Turbine blades (animated)
-  for (let i = 0; i < 6; i++) {
-    const a = turboSpin + (i/6)*Math.PI*2;
-    const eo = exploded ? getExplodeOffset('intake') : {x:0,y:0,z:0};
-    const p1 = iso(-145+eo.x, 30+eo.y, 42+eo.z);
-    const p2 = iso(-145+Math.cos(a)*10+eo.x, 30+Math.sin(a)*10+eo.y, 42+eo.z);
-    ctx.beginPath(); ctx.moveTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]);
-    ctx.strokeStyle = selectedSystem==='intake' ? 'rgba(167,139,250,0.9)' : 'rgba(167,139,250,0.3)';
-    ctx.lineWidth = 2; ctx.stroke();
-  }
-}
-
-function drawTransmission() {
-  // Gearbox housing
-  drawBox(-75, -25, 8, 45, 50, 35, '#3b82f6', 'transmission', 'Корпус КПП');
-  // Internal gears
-  for (let i = 0; i < 7; i++) {
-    const gearR = 6 + (i % 3) * 2;
-    drawCylinder(-70 + i*5, 0, 18, gearR, 8, '#60a5fa', 'transmission', i===3?`${i+1}-я передача`:'', 10);
-  }
-  // Dual clutch
-  drawCylinder(-80, 0, 20, 14, 6, '#2563eb', 'transmission', 'Двойное сцепление', 14);
-  // Mechatronic unit
-  drawBox(-72, -30, 25, 20, 8, 15, '#1d4ed8', 'transmission', 'Мехатроник');
-  // Output shaft
-  drawLine(-30, 0, 22, 30, 0, 22, '#60a5fa', 'transmission', 3);
-}
-
-function drawDrivetrain() {
-  // Center diff / transfer case
-  drawBox(-28, -12, 8, 25, 24, 18, '#6366f1', 'drivetrain', 'Раздаточная коробка');
-  // Front driveshafts
-  drawLine(-28, -12, 16, -60, -65, 10, '#818cf8', 'drivetrain', 3);
-  drawLine(-28, 12, 16, -60, 65, 10, '#818cf8', 'drivetrain', 3);
-  // Rear prop shaft
-  drawLine(0, 0, 14, 130, 0, 10, '#6366f1', 'drivetrain', 3);
-  // Rear diff
-  drawBox(120, -12, 5, 20, 24, 16, '#6366f1', 'drivetrain', 'Задний дифференциал');
-  // Rear driveshafts
-  drawLine(130, -12, 12, 130, -65, 10, '#818cf8', 'drivetrain', 3);
-  drawLine(130, 12, 12, 130, 65, 10, '#818cf8', 'drivetrain', 3);
-  // CV joints
-  drawCylinder(-60, -65, 8, 5, 6, '#a5b4fc', 'drivetrain', 'ШРУС', 8);
-  drawCylinder(-60, 65, 8, 5, 6, '#a5b4fc', 'drivetrain', '', 8);
-  drawCylinder(130, -65, 8, 5, 6, '#a5b4fc', 'drivetrain', '', 8);
-  drawCylinder(130, 65, 8, 5, 6, '#a5b4fc', 'drivetrain', '', 8);
-  // Haldex clutch
-  drawCylinder(110, 0, 10, 8, 10, '#4f46e5', 'drivetrain', 'Муфта Haldex', 10);
-}
-
-function drawSuspension() {
-  const bounce = running ? Math.sin(time * 3) * 3 : 0;
-  // Front left McPherson strut
-  drawLine(-80, -68, 5+bounce, -80, -68, 50+bounce, '#10b981', 'suspension', 3);
-  drawCylinder(-80, -68, 20+bounce, 5, 25, '#10b981', 'suspension', 'Стойка McPherson', 8);
-  // Front right
-  drawLine(-80, 68, 5+bounce, -80, 68, 50+bounce, '#10b981', 'suspension', 3);
-  drawCylinder(-80, 68, 20+bounce, 5, 25, '#10b981', 'suspension', '', 8);
-  // Rear left multilink
-  drawLine(130, -68, 5-bounce, 130, -68, 40-bounce, '#10b981', 'suspension', 3);
-  drawCylinder(130, -68, 15-bounce, 4, 22, '#10b981', 'suspension', 'Многорычажная', 8);
-  // Rear right
-  drawLine(130, 68, 5-bounce, 130, 68, 40-bounce, '#10b981', 'suspension', 3);
-  drawCylinder(130, 68, 15-bounce, 4, 22, '#10b981', 'suspension', '', 8);
-
-  // Control arms (A-arms)
-  drawLine(-80, -68, 8+bounce, -60, -40, 8, '#34d399', 'suspension', 2);
-  drawLine(-80, -68, 8+bounce, -100, -40, 8, '#34d399', 'suspension', 2);
-  drawLine(-80, 68, 8+bounce, -60, 40, 8, '#34d399', 'suspension', 2);
-  drawLine(-80, 68, 8+bounce, -100, 40, 8, '#34d399', 'suspension', 2);
-  // Rear multilink arms
-  for (let side of [-1, 1]) {
-    drawLine(130, side*68, 8-bounce, 120, side*40, 8, '#34d399', 'suspension', 2);
-    drawLine(130, side*68, 8-bounce, 140, side*40, 8, '#34d399', 'suspension', 2);
-    drawLine(130, side*68, 15-bounce, 115, side*45, 12, '#34d399', 'suspension', 1.5);
-  }
-
-  // Front anti-roll bar
-  drawLine(-80, -60, 12+bounce, -80, 60, 12+bounce, '#6ee7b7', 'suspension', 2);
-  // Rear anti-roll bar
-  drawLine(130, -55, 10-bounce, 130, 55, 10-bounce, '#6ee7b7', 'suspension', 2);
-}
-
-function drawSteering() {
-  // Steering rack
-  drawBox(-85, -45, 18, 10, 90, 8, '#14b8a6', 'steering', 'Рулевая рейка');
-  // Tie rods
-  drawLine(-80, -45, 22, -80, -68, 12, '#2dd4bf', 'steering', 2);
-  drawLine(-80, 45, 22, -80, 68, 12, '#2dd4bf', 'steering', 2);
-  // Steering column
-  drawLine(-80, 0, 22, -50, -10, 65, '#14b8a6', 'steering', 3);
-  // Steering wheel
-  const eo = exploded ? getExplodeOffset('steering') : {x:0,y:0,z:0};
-  const swCenter = iso(-50+eo.x, -10+eo.y, 68+eo.z);
-  const swActive = selectedSystem === 'steering';
-  ctx.beginPath();
-  ctx.arc(swCenter[0], swCenter[1], 14 * zoom, 0, Math.PI*2);
-  ctx.strokeStyle = swActive ? 'rgba(20,184,166,0.9)' : 'rgba(20,184,166,0.3)';
-  ctx.lineWidth = swActive ? 3 : 1.5;
-  ctx.stroke();
-  if (swActive) {
-    ctx.fillStyle = '#fff'; ctx.font = '9px system-ui'; ctx.textAlign = 'center';
-    ctx.fillText('Руль', swCenter[0], swCenter[1] - 20);
-  }
-  // EPS motor
-  drawCylinder(-85, 10, 20, 6, 12, '#0d9488', 'steering', 'EPS мотор', 8);
-}
-
-function drawBrakes() {
-  // Draw brake lines
-  drawPipe([
-    [-50, 0, 28],
-    [-50, 0, 15],
-    [-80, 0, 12],
-    [-80, -68, 10]
-  ], '#f43f5e', 'brakes', 2);
-  drawPipe([
-    [-50, 0, 28],
-    [-50, 0, 15],
-    [-80, 0, 12],
-    [-80, 68, 10]
-  ], '#f43f5e', 'brakes', 2);
-  drawPipe([
-    [-50, 0, 28],
-    [50, 0, 12],
-    [130, -68, 10]
-  ], '#f43f5e', 'brakes', 2);
-  drawPipe([
-    [-50, 0, 28],
-    [50, 0, 12],
-    [130, 68, 10]
-  ], '#f43f5e', 'brakes', 2);
-  // Brake master cylinder + booster
-  drawCylinder(-50, 0, 25, 8, 14, '#f43f5e', 'brakes', 'Вакуумный усилитель', 10);
-  drawCylinder(-50, 0, 38, 4, 8, '#fb7185', 'brakes', 'ГТЦ', 8);
-  // ABS unit
-  drawBox(-45, 15, 22, 12, 15, 12, '#e11d48', 'brakes', 'Блок ABS/ESP');
-}
-
-function drawCooling() {
-  // Radiator
-  drawBox(-165, -40, 18, 8, 80, 35, '#06b6d4', 'cooling', 'Радиатор');
-  // Radiator fins
-  for (let i = 0; i < 8; i++) {
-    drawLine(-165, -35+i*10, 20, -165, -35+i*10, 50, '#22d3ee', 'cooling', 0.5);
-  }
-  // Coolant pipes
-  drawPipe([
-    [-157, -20, 40],
-    [-145, -20, 42],
-    [-140, -25, 45],
-    [-135, -25, 40]
-  ], '#06b6d4', 'cooling', 3);
-  drawPipe([
-    [-157, 20, 30],
-    [-145, 20, 28],
-    [-140, 0, 25],
-    [-135, 0, 20]
-  ], '#06b6d4', 'cooling', 3);
-  // Thermostat
-  drawCylinder(-135, -15, 38, 5, 6, '#0891b2', 'cooling', 'Термостат', 8);
-  // Water pump
-  drawCylinder(-130, 20, 25, 7, 8, '#0e7490', 'cooling', 'Помпа', 10);
-  // Fans
-  const fanSpin = running ? time * 10 : 0;
-  for (let fan = 0; fan < 2; fan++) {
-    const fy = -15 + fan * 30;
-    for (let i = 0; i < 5; i++) {
-      const a = fanSpin + (i/5)*Math.PI*2;
-      const eo = exploded ? getExplodeOffset('cooling') : {x:0,y:0,z:0};
-      const p1 = iso(-167+eo.x, fy+eo.y, 35+eo.z);
-      const p2 = iso(-167+eo.x, fy+Math.cos(a)*12+eo.y, 35+Math.sin(a)*12+eo.z);
-      ctx.beginPath(); ctx.moveTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]);
-      ctx.strokeStyle = selectedSystem==='cooling'?'rgba(6,182,212,0.8)':'rgba(6,182,212,0.2)';
-      ctx.lineWidth = 2; ctx.stroke();
-    }
-  }
-  // Expansion tank
-  drawBox(-155, 42, 35, 10, 12, 12, '#67e8f9', 'cooling', 'Расш. бачок');
-  // Turbo cooling circuit
-  drawPipe([
-    [-145, 30, 38],
-    [-150, 35, 40],
-    [-155, 42, 40]
-  ], '#22d3ee', 'cooling', 2);
-}
-
-function drawOilSystem() {
-  // Oil pump
-  drawCylinder(-130, -20, 6, 6, 5, '#d97706', 'oil', 'Масляный насос', 8);
-  // Oil filter
-  drawCylinder(-125, 25, 8, 5, 10, '#f59e0b', 'oil', 'Масляный фильтр', 8);
-  // Oil cooler
-  drawBox(-120, 30, 15, 12, 12, 8, '#b45309', 'oil', 'Маслоохладитель');
-  // Oil galleries (pipes in engine block)
-  drawPipe([
-    [-130, -20, 8],
-    [-130, -10, 10],
-    [-130, 0, 12],
-    [-130, 15, 10],
-    [-125, 25, 10]
-  ], '#fbbf24', 'oil', 2);
-  drawPipe([
-    [-125, 25, 18],
-    [-120, 30, 18]
-  ], '#fbbf24', 'oil', 2);
-  // Return to sump
-  drawPipe([
-    [-120, 35, 15],
-    [-115, 35, 8],
-    [-120, 0, 5],
-    [-130, -20, 5]
-  ], '#92400e', 'oil', 2);
-}
-
-function drawFuelSystem() {
-  // Fuel tank
-  drawBox(80, -50, 3, 50, 100, 18, '#f59e0b', 'fuel', 'Топливный бак');
-  // In-tank fuel pump
-  drawCylinder(105, 0, 5, 5, 12, '#fbbf24', 'fuel', 'Топливный насос', 8);
-  // Fuel lines
-  drawPipe([
-    [105, 0, 17],
-    [80, 0, 18],
-    [40, 0, 18],
-    [0, 0, 20],
-    [-60, 0, 22],
-    [-100, 0, 25],
-    [-130, 0, 30]
-  ], '#f59e0b', 'fuel', 2.5);
-  // Fuel filter
-  drawCylinder(50, 0, 18, 4, 10, '#d97706', 'fuel', 'Топливный фильтр', 8);
-  // Fuel rail
-  drawBox(-135, -20, 60, 4, 40, 6, '#fbbf24', 'fuel', 'Топливная рампа');
-  // Injectors
-  for (let i = 0; i < 4; i++) {
-    drawCylinder(-133, -15 + i*10, 55, 2, 6, '#ef4444', 'fuel', i===0?'Форсунки':'', 6);
-  }
-  // Fuel pressure regulator
-  drawCylinder(-130, 22, 62, 4, 5, '#b45309', 'fuel', 'Регулятор давления', 8);
-  // Return line
-  drawPipe([
-    [-130, 22, 62],
-    [-100, 25, 30],
-    [-50, 20, 22],
-    [0, 15, 20],
-    [50, 10, 18],
-    [80, 5, 15]
-  ], '#92400e', 'fuel', 1.5);
-}
-
-function drawElectrical() {
-  // Battery
-  drawBox(100, -45, 22, 22, 18, 15, '#eab308', 'electrical', 'Аккумулятор 12V');
-  // Battery terminals
-  drawCylinder(108, -43, 37, 2, 4, '#fde047', 'electrical', '+', 6);
-  drawCylinder(116, -43, 37, 2, 4, '#6b7280', 'electrical', '-', 6);
-  // 48V BSG (belt starter generator)
-  drawCylinder(-82, -35, 30, 8, 12, '#ca8a04', 'electrical', 'BSG 48V', 10);
-  // Alternator belt
-  drawLine(-82, -35, 35, -110, -28, 55, '#fde047', 'electrical', 1);
-  // ECU
-  drawBox(-30, -55, 28, 18, 14, 8, '#a16207', 'electrical', 'ЭБУ (ECU)');
-  // Fuse box
-  drawBox(-20, 50, 25, 15, 12, 8, '#eab308', 'electrical', 'Блок предохранителей');
-  // CAN bus wires
-  drawPipe([
-    [-30, -48, 32],
-    [-50, -40, 30],
-    [-82, -35, 32]
-  ], '#fde047', 'electrical', 1.5);
-  drawPipe([
-    [-30, -48, 32],
-    [0, -45, 30],
-    [40, -42, 28],
-    [100, -40, 25]
-  ], '#fde047', 'electrical', 1.5);
-  drawPipe([
-    [-30, -48, 32],
-    [-30, 0, 30],
-    [-20, 50, 27]
-  ], '#fde047', 'electrical', 1.5);
-  // Sensor points (animated blinking)
-  const blink = Math.sin(time * 6) > 0;
-  if (selectedSystem === 'electrical' && blink) {
-    const sensors = [
-      [-130, 0, 50, 'Датч. детонации'],
-      [-140, 35, 50, 'MAF'],
-      [-80, 0, 8, 'ABS датчик'],
-      [130, 0, 8, 'ABS датчик'],
-      [-135, -10, 35, 'Темп. ОЖ'],
-      [-125, 20, 12, 'Давл. масла'],
-      [-130, 25, 62, 'Лямбда-зонд']
-    ];
-    sensors.forEach(s => {
-      const eo = exploded ? getExplodeOffset('electrical') : {x:0,y:0,z:0};
-      const p = iso(s[0]+eo.x, s[1]+eo.y, s[2]+eo.z);
-      ctx.beginPath();
-      ctx.arc(p[0], p[1], 4, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(234,179,8,0.9)';
-      ctx.fill();
-      ctx.fillStyle = '#fff'; ctx.font = '8px system-ui'; ctx.textAlign = 'center';
-      ctx.fillText(s[3], p[0], p[1]-8);
+  cyl3d(-110,18,0, 4,50, '#fbbf24','engine','Коленвал','z');
+  // Connecting rods
+  for(let i=0;i<4;i++){
+    const phase=(t*5+i*.25)%1;
+    const py=-8+sin(phase*PI*2)*8;
+    const e2=eo('engine');
+    const p1=proj(-125+i*12+e2[0],py+e2[1],e2[2]);
+    const p2=proj(-125+i*12+e2[0],18+e2[1],sin(phase*PI*2)*3+e2[2]);
+    addDraw((p1.z+p2.z)/2,'engine',()=>{
+      X.globalAlpha=cur==='engine'?.9:.3;
+      X.beginPath();X.moveTo(p1.x,p1.y);X.lineTo(p2.x,p2.y);
+      X.strokeStyle='#f87171';X.lineWidth=3;X.lineCap='round';X.stroke();
+      X.globalAlpha=1;
     });
   }
+
+  // Flywheel
+  cyl3d(-110,12,-28, 14,5, '#991b1b','engine','Маховик','z');
+
+  // Timing chain area
+  box3d(-138,-15,0, 4,30,40, '#7f1d1d','engine','Цепь ГРМ');
+
+  // Oil pan
+  box3d(-110,24,0, 55,8,48, '#d97706','oil','Масляный поддон');
 }
 
-function drawExhaust() {
-  // Exhaust manifold
-  for (let i = 0; i < 4; i++) {
-    drawPipe([
-      [-130 + i*12, 30, 20],
-      [-130 + i*12, 38, 18],
-      [-115, 42, 15]
-    ], '#78716c', 'exhaust', 2);
-  }
-  // Turbo (exhaust side)
-  drawCylinder(-115, 42, 12, 8, 10, '#57534e', 'exhaust', 'Турбина (выхлоп)', 8);
-  // Downpipe
-  drawPipe([
-    [-115, 42, 12],
-    [-100, 45, 10],
-    [-70, 45, 8],
-    [-40, 42, 6]
-  ], '#78716c', 'exhaust', 3);
-  // Catalytic converter
-  drawBox(-45, 38, 2, 20, 14, 10, '#a8a29e', 'exhaust', 'Катализатор');
-  // GPF
-  drawBox(-20, 38, 2, 15, 12, 10, '#d6d3d1', 'exhaust', 'GPF (сажевый)');
-  // Mid pipe
-  drawPipe([
-    [-5, 44, 6],
-    [30, 44, 5],
-    [60, 42, 4]
-  ], '#78716c', 'exhaust', 3);
-  // Resonator
-  drawBox(55, 38, 1, 22, 14, 8, '#57534e', 'exhaust', 'Резонатор');
-  // Rear muffler
-  drawBox(90, 36, 0, 35, 18, 12, '#44403c', 'exhaust', 'Глушитель');
-  // Exhaust tips
-  drawCylinder(127, 40, 4, 3, 8, '#a8a29e', 'exhaust', '', 8);
-  drawCylinder(127, 48, 4, 3, 8, '#a8a29e', 'exhaust', 'Выхлопные патрубки', 8);
-  // Sport valve
-  drawCylinder(88, 45, 5, 3, 5, '#fbbf24', 'exhaust', 'Клапан (спорт)', 6);
-  // Lambda sensors
-  drawCylinder(-42, 38, 10, 2, 4, '#eab308', 'exhaust', 'Лямбда 1', 6);
-  drawCylinder(-5, 38, 10, 2, 4, '#eab308', 'exhaust', 'Лямбда 2', 6);
+// ============ TURBO & INTAKE ============
+function drawIntake(){
+  // Air filter
+  box3d(-145,-12,-40, 18,16,16, '#8b5cf6','intake','Воздушный фильтр');
+  // Pipe to turbo
+  pipe3d([[-145,-12,-32],[-140,-5,-25],[-135,0,-18],[-132,5,-10]],
+    '#a78bfa','intake',3);
 
-  // Exhaust gas particles (animated)
-  if (running && (selectedSystem === 'exhaust' || !xray)) {
-    for (let i = 0; i < 5; i++) {
-      const t2 = (time * 2 + i * 0.2) % 1;
-      const eo = exploded ? getExplodeOffset('exhaust') : {x:0,y:0,z:0};
-      const p = iso(130 + t2*20 + eo.x, 44 + Math.sin(t2*5)*3 + eo.y, 6 + t2*8 + eo.z);
-      ctx.beginPath();
-      ctx.arc(p[0], p[1], 2 - t2, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(120,113,108,${0.6-t2*0.5})`;
-      ctx.fill();
+  // Turbocharger housing
+  cyl3d(-130,5,-5, 14,16, '#7c3aed','intake','Турбокомпрессор','z');
+  // Compressor wheel (animated)
+  const tSpin=run?t*20:0;
+  const e2=eo('intake');
+  for(let i=0;i<8;i++){
+    const a=tSpin+(i/8)*PI*2;
+    const p1=proj(-130+e2[0],5+e2[1],-5+e2[2]);
+    const p2=proj(-130+cos(a)*11+e2[0],5+sin(a)*11+e2[1],-5+e2[2]);
+    addDraw(p1.z,'intake',()=>{
+      X.globalAlpha=cur==='intake'?.8:.15;
+      X.beginPath();X.moveTo(p1.x,p1.y);X.lineTo(p2.x,p2.y);
+      X.strokeStyle='#c4b5fd';X.lineWidth=2;X.stroke();
+      X.globalAlpha=1;
+    });
+  }
+
+  // Intercooler
+  box3d(-155,-5,0, 8,22,60, '#6d28d9','intake','Интеркулер');
+  // Charge pipe
+  pipe3d([[-130,5,5],[-140,0,10],[-150,-5,15],[-155,-5,10]],
+    '#a78bfa','intake',2.5);
+  pipe3d([[-155,-5,-10],[-148,-10,-5],[-140,-15,0],[-130,-20,0]],
+    '#c4b5fd','intake',2.5);
+
+  // Throttle body
+  cyl3d(-125,-22,0, 6,6, '#5b21b6','intake','Дроссельная заслонка','z');
+
+  // Intake manifold
+  box3d(-112,-26,0, 8,6,42, '#7c3aed','intake','Впускной коллектор');
+  // Runners
+  for(let i=0;i<4;i++){
+    pipe3d([[-108,-26,-15+i*10],[-105,-20,-15+i*10],[-108,-10,-15+i*10]],
+      '#a78bfa','intake',2,false);
+  }
+
+  // Blow-off valve
+  cyl3d(-142,0,12, 4,5, '#4c1d95','intake','BOV','y');
+  // Wastegate
+  sphere3d(-130,12,-8, 5,'#5b21b6','intake','Wastegate');
+}
+
+// ============ TRANSMISSION ============
+function drawTrans(){
+  // Housing
+  box3d(-60,10,0, 40,30,35, '#2563eb','trans','Корпус КПП');
+  // Gear sets
+  for(let i=0;i<7;i++){
+    const gr=4+(i%3)*1.5;
+    cyl3d(-75+i*5,5,0, gr,6, '#60a5fa','trans',i===3?`${i+1}-я пер.`:'','z');
+  }
+  // Dual clutch pack
+  cyl3d(-82,10,0, 16,8, '#1d4ed8','trans','Двойное сцепление','z');
+  // Mechatronic unit
+  box3d(-65,0,-20, 16,10,8, '#1e40af','trans','Мехатроник');
+  // Output shaft
+  cyl3d(-40,10,0, 3,30, '#93c5fd','trans','Вых. вал','z');
+}
+
+// ============ DRIVETRAIN ============
+function drawDrive(){
+  // Transfer case
+  box3d(-15,15,0, 22,18,20, '#4f46e5','drive','Раздаточная коробка');
+  // Front driveshafts
+  pipe3d([[-15,15,10],[-40,15,20],[-80,15,40],[-110,15,55]],
+    '#818cf8','drive',3);
+  pipe3d([[-15,15,-10],[-40,15,-20],[-80,15,-40],[-110,15,-55]],
+    '#818cf8','drive',3);
+  // Rear propshaft
+  pipe3d([[0,15,0],[30,18,0],[60,18,0],[90,18,0],[115,18,0]],
+    '#6366f1','drive',4);
+  // Rear diff
+  box3d(120,18,0, 18,16,22, '#4338ca','drive','Задний дифференциал');
+  // Rear half-shafts
+  pipe3d([[130,18,11],[130,18,25],[125,18,45],[120,18,55]],
+    '#818cf8','drive',3);
+  pipe3d([[130,18,-11],[130,18,-25],[125,18,-45],[120,18,-55]],
+    '#818cf8','drive',3);
+  // CV joints
+  sphere3d(-110,15,55, 5,'#a5b4fc','drive','ШРУС');
+  sphere3d(-110,15,-55, 5,'#a5b4fc','drive','');
+  sphere3d(120,18,55, 5,'#a5b4fc','drive','');
+  sphere3d(120,18,-55, 5,'#a5b4fc','drive','');
+  // Haldex
+  cyl3d(105,18,0, 8,10, '#3730a3','drive','Haldex','z');
+}
+
+// ============ SUSPENSION ============
+function drawSusp(){
+  const b=run?sin(t*3.5)*2:0;
+  // Front MacPherson struts
+  for(let s of[-1,1]){
+    const sz=s*55;
+    // Strut body
+    cyl3d(-110,-5+b,sz, 5,35, '#10b981','susp',s<0?'Стойка McPherson':'','y');
+    // Spring (coils)
+    const e2=eo('susp');
+    for(let i=0;i<8;i++){
+      const a1=(i/8)*PI*2;
+      const a2=((i+1)/8)*PI*2;
+      const y1=-20+b+i*3.5;
+      const y2=-20+b+(i+1)*3.5;
+      const p1=proj(-110+cos(a1)*7+e2[0],y1+e2[1],sz+sin(a1)*3+e2[2]);
+      const p2=proj(-110+cos(a2)*7+e2[0],y2+e2[1],sz+sin(a2)*3+e2[2]);
+      addDraw((p1.z+p2.z)/2,'susp',()=>{
+        X.globalAlpha=cur==='susp'?.9:.3;
+        X.beginPath();X.moveTo(p1.x,p1.y);X.lineTo(p2.x,p2.y);
+        X.strokeStyle='#34d399';X.lineWidth=2.5;X.lineCap='round';X.stroke();
+        X.globalAlpha=1;
+      });
+    }
+    // Lower arm
+    pipe3d([[-110,18+b,sz],[-95,20,sz*.6],[-80,20,sz*.3]],
+      '#059669','susp',2.5,false);
+    pipe3d([[-110,18+b,sz],[-125,20,sz*.6],[-135,20,sz*.3]],
+      '#059669','susp',2.5,false);
+  }
+
+  // Rear multilink
+  for(let s of[-1,1]){
+    const sz=s*55;
+    cyl3d(125,-3-b,sz, 4,30, '#10b981','susp',s<0?'Многорычажная':'','y');
+    // Springs
+    const e2=eo('susp');
+    for(let i=0;i<7;i++){
+      const a1=(i/7)*PI*2;
+      const a2=((i+1)/7)*PI*2;
+      const y1=-16-b+i*3.2;
+      const y2=-16-b+(i+1)*3.2;
+      const p1=proj(125+cos(a1)*6+e2[0],y1+e2[1],sz+sin(a1)*2.5+e2[2]);
+      const p2=proj(125+cos(a2)*6+e2[0],y2+e2[1],sz+sin(a2)*2.5+e2[2]);
+      addDraw((p1.z+p2.z)/2,'susp',()=>{
+        X.globalAlpha=cur==='susp'?.9:.3;
+        X.beginPath();X.moveTo(p1.x,p1.y);X.lineTo(p2.x,p2.y);
+        X.strokeStyle='#34d399';X.lineWidth=2;X.lineCap='round';X.stroke();
+        X.globalAlpha=1;
+      });
+    }
+    // 3 control arms per side
+    pipe3d([[125,20-b,sz],[115,22,sz*.5]],
+      '#059669','susp',2,false);
+    pipe3d([[125,20-b,sz],[135,22,sz*.6]],
+      '#059669','susp',2,false);
+    pipe3d([[125,14-b,sz],[118,16,sz*.4]],
+      '#047857','susp',1.8,false);
+  }
+
+  // Anti-roll bars
+  pipe3d([[-110,18+b,-45],[-110,20,-20],[-110,20,20],[-110,18+b,45]],
+    '#6ee7b7','susp',2,false);
+  pipe3d([[125,18-b,-42],[125,20,-15],[125,20,15],[125,18-b,42]],
+    '#6ee7b7','susp',2,false);
+}
+
+// ============ STEERING ============
+function drawSteer(){
+  // Rack
+  box3d(-95,15,0, 8,6,85, '#0d9488','steer','Рулевая рейка');
+  // Tie rods
+  pipe3d([[-95,15,42],[-100,16,50],[-110,16,55]],
+    '#2dd4bf','steer',2,false);
+  pipe3d([[-95,15,-42],[-100,16,-50],[-110,16,-55]],
+    '#2dd4bf','steer',2,false);
+  // Steering column
+  pipe3d([[-92,15,0],[-80,0,0],[-65,-20,-10],[-55,-30,-15]],
+    '#14b8a6','steer',3,false);
+
+  // Steering wheel
+  const e2=eo('steer');
+  const sw=proj(-55+e2[0],-32+e2[1],-15+e2[2]);
+  addDraw(sw.z,'steer',()=>{
+    X.globalAlpha=cur==='steer'?.9:.3;
+    X.beginPath();X.arc(sw.x,sw.y,16*zm*.6,0,PI*2);
+    X.strokeStyle=cur==='steer'?'#2dd4bf':'rgba(45,212,191,.4)';
+    X.lineWidth=3*zm*.6;X.stroke();
+    // Spokes
+    for(let i=0;i<3;i++){
+      const a=(i/3)*PI*2-PI/2;
+      X.beginPath();
+      X.moveTo(sw.x,sw.y);
+      X.lineTo(sw.x+cos(a)*14*zm*.6,sw.y+sin(a)*14*zm*.6);
+      X.strokeStyle=cur==='steer'?'#14b8a6':'rgba(20,184,166,.3)';
+      X.lineWidth=2;X.stroke();
+    }
+    if(cur==='steer'){
+      X.globalAlpha=1;
+      X.fillStyle='#fff';X.font='bold 9px system-ui';X.textAlign='center';
+      X.shadowColor='rgba(20,184,166,.5)';X.shadowBlur=6;
+      X.fillText('Руль',sw.x,sw.y-22);X.shadowBlur=0;
+    }
+    X.globalAlpha=1;
+  });
+
+  // EPS motor
+  cyl3d(-95,10,8, 6,10, '#0f766e','steer','EPS мотор','z');
+}
+
+// ============ BRAKES ============
+function drawBrakes(){
+  // Master cylinder + booster
+  cyl3d(-68,-5,-15, 10,14, '#be123c','brake','Вакуумный усилитель','z');
+  cyl3d(-68,-5,-5, 5,10, '#f43f5e','brake','ГТЦ','z');
+
+  // ABS/ESP unit
+  box3d(-55,8,-18, 14,12,10, '#9f1239','brake','ABS/ESP');
+
+  // Brake lines to all 4 wheels
+  pipe3d([[-55,8,-15],[-70,12,-20],[-90,14,-30],[-110,16,-50]],
+    '#fb7185','brake',2);
+  pipe3d([[-55,8,-10],[-70,12,10],[-90,14,30],[-110,16,50]],
+    '#fb7185','brake',2);
+  pipe3d([[-55,8,-15],[-20,12,-10],[30,14,-10],[80,16,-20],[120,18,-50]],
+    '#fb7185','brake',2);
+  pipe3d([[-55,8,-10],[-20,12,10],[30,14,10],[80,16,20],[120,18,50]],
+    '#fb7185','brake',2);
+}
+
+// ============ COOLING ============
+function drawCool(){
+  // Radiator
+  box3d(-155,0,0, 8,30,70, '#0891b2','cool','Радиатор');
+  // Radiator fins detail
+  for(let i=0;i<6;i++){
+    const e2=eo('cool');
+    const y=-10+i*4;
+    const p1=proj(-155+e2[0],y+e2[1],-30+e2[2]);
+    const p2=proj(-155+e2[0],y+e2[1],30+e2[2]);
+    addDraw(p1.z,'cool',()=>{
+      X.globalAlpha=cur==='cool'?.4:.1;
+      X.beginPath();X.moveTo(p1.x,p1.y);X.lineTo(p2.x,p2.y);
+      X.strokeStyle='#22d3ee';X.lineWidth=1;X.stroke();
+      X.globalAlpha=1;
+    });
+  }
+
+  // Fans (animated)
+  for(let fi=0;fi<2;fi++){
+    const fz=-18+fi*36;
+    const e2=eo('cool');
+    const fc=proj(-160+e2[0],0+e2[1],fz+e2[2]);
+    const fanA=run?t*12+fi:0;
+    addDraw(fc.z,'cool',()=>{
+      X.globalAlpha=cur==='cool'?.7:.15;
+      for(let i=0;i<6;i++){
+        const a=fanA+(i/6)*PI*2;
+        const p2=proj(-160+e2[0],cos(a)*12+e2[1],fz+sin(a)*12+e2[2]);
+        X.beginPath();X.moveTo(fc.x,fc.y);X.lineTo(p2.x,p2.y);
+        X.strokeStyle='#06b6d4';X.lineWidth=3;X.lineCap='round';X.stroke();
+      }
+      if(cur==='cool'&&fi===0){
+        X.globalAlpha=1;X.fillStyle='#fff';X.font='bold 9px system-ui';X.textAlign='center';
+        X.fillText('Вентилятор',fc.x,fc.y-18);
+      }
+      X.globalAlpha=1;
+    });
+  }
+
+  // Coolant hoses
+  pipe3d([[-151,5,20],[-140,0,15],[-130,0,10],[-115,-5,5]],
+    '#22d3ee','cool',3);
+  pipe3d([[-115,15,5],[-125,18,10],[-140,15,15],[-151,10,20]],
+    '#067a8f','cool',3);
+
+  // Thermostat
+  sphere3d(-118,-2,5, 5,'#0e7490','cool','Термостат');
+  // Water pump
+  cyl3d(-120,12,8, 7,8, '#155e75','cool','Помпа','z');
+  // Expansion tank
+  box3d(-148,-15,35, 10,10,10, '#67e8f9','cool','Расш. бачок');
+}
+
+// ============ OIL ============
+function drawOil(){
+  // Oil pump
+  cyl3d(-115,22,-12, 6,8, '#b45309','oil','Масляный насос','z');
+  // Oil filter
+  cyl3d(-100,20,18, 5,12, '#f59e0b','oil','Масляный фильтр','y');
+  // Oil cooler
+  box3d(-95,20,25, 12,8,10, '#92400e','oil','Маслоохладитель');
+  // Oil galleries
+  pipe3d([[-115,22,-12],[-115,18,-5],[-115,10,0],[-110,5,5],[-105,10,10],[-100,18,18]],
+    '#fbbf24','oil',2);
+  pipe3d([[-100,26,18],[-95,24,22]],
+    '#fbbf24','oil',2);
+  // Return
+  pipe3d([[-95,24,30],[-100,26,20],[-108,26,5],[-115,26,-10],[-115,24,-12]],
+    '#78350f','oil',2);
+  // Dipstick
+  cyl3d(-105,-8,12, 1,20, '#eab308','oil','Щуп','y');
+}
+
+// ============ FUEL ============
+function drawFuel(){
+  // Fuel tank
+  box3d(95,22,0, 45,14,75, '#d97706','fuel','Топливный бак');
+  // In-tank pump
+  cyl3d(95,18,0, 5,10, '#f59e0b','fuel','Насос','y');
+  // Main fuel line
+  pipe3d([[95,18,0],[70,18,0],[40,18,5],[10,16,5],[-20,14,5],[-60,10,5],[-90,5,5],[-110,-5,0]],
+    '#f59e0b','fuel',2.5);
+  // Fuel filter
+  cyl3d(40,16,5, 4,10, '#b45309','fuel','Фильтр','z');
+  // Fuel rail
+  box3d(-112,-24,0, 4,4,35, '#fbbf24','fuel','Рампа');
+  // Injectors
+  for(let i=0;i<4;i++){
+    cyl3d(-112,-20,-12+i*8, 2,6, '#ef4444','fuel',i===0?'Форсунка':'','y');
+  }
+  // Pressure regulator
+  sphere3d(-112,-24,20, 4,'#92400e','fuel','Регулятор');
+  // Return line
+  pipe3d([[-112,-24,20],[-90,-10,15],[-50,-5,12],[0,5,10],[50,12,8],[85,18,5]],
+    '#78350f','fuel',1.5);
+}
+
+// ============ ELECTRICAL ============
+function drawElec(){
+  // Battery
+  box3d(110,5,-35, 22,16,16, '#ca8a04','elec','АКБ 12V');
+  // Terminals
+  cyl3d(104,0,-35, 2,4, '#fef08a','elec','+','y');
+  cyl3d(116,0,-35, 2,4, '#6b7280','elec','-','y');
+
+  // BSG 48V
+  cyl3d(-90,-10,-25, 8,12, '#a16207','elec','BSG 48V','z');
+  // Belt to engine
+  pipe3d([[-90,-10,-25],[-100,-15,-18],[-110,-20,-10]],
+    '#fde047','elec',1.5,false);
+
+  // ECU
+  box3d(-40,-10,-35, 18,10,12, '#854d0e','elec','ЭБУ Bosch');
+
+  // Fuse box
+  box3d(-30,5,38, 14,8,10, '#eab308','elec','Предохранители');
+
+  // CAN bus wiring harness
+  pipe3d([[-40,-10,-35],[-60,-8,-30],[-90,-10,-25]],
+    '#fde047','elec',1.5,false);
+  pipe3d([[-40,-10,-35],[-10,-8,-32],[30,-5,-34],[70,0,-35],[110,5,-35]],
+    '#fde047','elec',1.5,false);
+  pipe3d([[-40,-10,-35],[-40,-5,-15],[-35,0,10],[-30,5,35]],
+    '#fde047','elec',1.5,false);
+  pipe3d([[-40,-10,-35],[-50,-8,-25],[-55,-5,-10],[-55,5,0],[-55,8,15],[-45,10,30]],
+    '#fde047','elec',1.2,false);
+
+  // Sensor indicators (blinking)
+  if(cur==='elec'){
+    const blink=sin(t*8)>.2;
+    if(blink){
+      const sensors=[
+        [-115,-5,0,'Детонация'],[-135,0,-15,'MAF'],
+        [-110,18,55,'ABS FL'],[125,18,55,'ABS RL'],
+        [-118,-3,5,'Темп ОЖ'],[-100,20,18,'Давл. масла'],
+        [-108,-24,-15,'Лямбда'],[95,18,0,'Уровень топл.']
+      ];
+      sensors.forEach(s=>{
+        const e2=eo('elec');
+        const p=proj(s[0]+e2[0],s[1]+e2[1],s[2]+e2[2]);
+        addDraw(p.z+100,'elec',()=>{
+          X.globalAlpha=.9;
+          X.beginPath();X.arc(p.x,p.y,4*zm*.6,0,PI*2);
+          X.fillStyle='#fde047';
+          X.shadowColor='#fde047';X.shadowBlur=12;
+          X.fill();X.shadowBlur=0;
+          X.fillStyle='#fff';X.font='bold 8px system-ui';X.textAlign='center';
+          X.fillText(s[3],p.x,p.y-8);
+          X.globalAlpha=1;
+        });
+      });
     }
   }
 }
 
-function drawWheels() {
-  const bounce = running ? Math.sin(time * 3) * 2 : 0;
-  drawWheel(-80, -80, 18+bounce, 18, 'brakes');
-  drawWheel(-80, 80, 18+bounce, 18, 'brakes');
-  drawWheel(130, -80, 18-bounce, 18, 'brakes');
-  drawWheel(130, 80, 18-bounce, 18, 'brakes');
-}
-
-function drawIntakeSystem() {
-  // Air filter box
-  drawBox(-160, -45, 40, 18, 20, 12, '#a78bfa', 'intake', 'Воздушный фильтр');
-  // Intake pipe to turbo
-  drawPipe([
-    [-142, -35, 46],
-    [-148, -20, 44],
-    [-148, 10, 42],
-    [-145, 25, 40]
-  ], '#a78bfa', 'intake', 3);
-  // Intercooler
-  drawBox(-160, -55, 20, 8, 40, 14, '#8b5cf6', 'intake', 'Интеркулер');
-  // Charge pipe from turbo
-  drawPipe([
-    [-145, 30, 48],
-    [-155, 20, 38],
-    [-160, -10, 30],
-    [-160, -35, 27]
-  ], '#c4b5fd', 'intake', 2.5);
-  // Throttle body
-  drawCylinder(-145, -10, 58, 5, 6, '#7c3aed', 'intake', 'Дроссельная заслонка', 8);
-  // Intake manifold
-  drawBox(-140, -22, 56, 5, 44, 8, '#8b5cf6', 'intake', 'Впускной коллектор');
-  // Intake runners
-  for (let i = 0; i < 4; i++) {
-    drawPipe([
-      [-140, -15 + i*10, 60],
-      [-136, -15 + i*10, 58]
-    ], '#a78bfa', 'intake', 2);
+// ============ EXHAUST ============
+function drawExhaust(){
+  // Exhaust manifold runners
+  for(let i=0;i<4;i++){
+    pipe3d([[-125+i*12,15,20],[-120+i*8,18,25],[-110,20,28]],
+      '#78716c','exh',2,false);
   }
-  // Blow-off valve
-  drawCylinder(-150, 15, 44, 3, 5, '#6d28d9', 'intake', 'Blow-off клапан', 6);
-  // Wastegate
-  drawCylinder(-148, 35, 42, 3, 5, '#5b21b6', 'intake', 'Вейстгейт', 6);
-}
+  // Turbo (exhaust side)
+  cyl3d(-108,20,30, 10,12, '#57534e','exh','Турбина','z');
 
-// ========== ANIMATION & HUD ==========
-function updateSimulation(dt) {
-  if (running) {
-    rpm += (targetRpm - rpm) * 0.02;
-    engineTemp += (92 - engineTemp) * 0.005;
-    speed += (120 - speed) * 0.01;
-  } else {
-    rpm *= 0.98;
-    engineTemp += (20 - engineTemp) * 0.002;
-    speed *= 0.97;
-  }
-  document.getElementById('rpm-val').textContent = Math.round(rpm);
-  document.getElementById('speed-val').textContent = Math.round(speed);
-  document.getElementById('temp-val').textContent = Math.round(engineTemp);
-}
+  // Downpipe
+  pipe3d([[-108,20,35],[-95,22,35],[-75,24,32],[-55,25,28]],
+    '#78716c','exh',3.5);
+  // Catalytic converter
+  box3d(-50,24,28, 22,12,10, '#a8a29e','exh','Катализатор');
+  // GPF
+  box3d(-22,24,28, 16,10,10, '#d6d3d1','exh','GPF');
+  // Mid pipe
+  pipe3d([[-14,24,28],[10,24,26],[35,24,24],[55,24,22]],
+    '#78716c','exh',3);
+  // Resonator
+  box3d(55,24,22, 20,10,10, '#57534e','exh','Резонатор');
+  // Rear muffler
+  box3d(100,24,20, 35,14,16, '#44403c','exh','Глушитель');
+  // Tips
+  cyl3d(120,24,28, 4,8, '#a8a29e','exh','','z');
+  cyl3d(120,24,15, 4,8, '#a8a29e','exh','Патрубки','z');
+  // Sport valve
+  sphere3d(98,24,25, 3,'#eab308','exh','Клапан');
+  // Lambda sensors
+  sphere3d(-48,18,30, 3,'#eab308','exh','O2 #1');
+  sphere3d(-14,18,30, 3,'#eab308','exh','O2 #2');
 
-function drawShadow() {
-  // Ground shadow
-  const center = iso(0, 0, 0);
-  ctx.beginPath();
-  const s1 = iso(-160, -80, -2);
-  const s2 = iso(160, -80, -2);
-  const s3 = iso(160, 80, -2);
-  const s4 = iso(-160, 80, -2);
-  ctx.moveTo(s1[0],s1[1]); ctx.lineTo(s2[0],s2[1]);
-  ctx.lineTo(s3[0],s3[1]); ctx.lineTo(s4[0],s4[1]);
-  ctx.closePath();
-  const grd = ctx.createRadialGradient(center[0],center[1],10,center[0],center[1],300);
-  grd.addColorStop(0, 'rgba(0,0,0,0.3)');
-  grd.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = grd;
-  ctx.fill();
-}
-
-function drawGlowEffect() {
-  // Glow around active system elements
-  if (selectedSystem === 'engine' && running) {
-    const eo = exploded ? getExplodeOffset('engine') : {x:0,y:0,z:0};
-    const p = iso(-110+eo.x, 0+eo.y, 40+eo.z);
-    const grd = ctx.createRadialGradient(p[0],p[1],5,p[0],p[1],40);
-    grd.addColorStop(0, 'rgba(239,68,68,0.15)');
-    grd.addColorStop(1, 'rgba(239,68,68,0)');
-    ctx.fillStyle = grd;
-    ctx.fillRect(p[0]-50, p[1]-50, 100, 100);
+  // Exhaust gas particles
+  if(run){
+    const e2=eo('exh');
+    for(let i=0;i<6;i++){
+      const ft=(t*2+i*.15)%1;
+      const p=proj(128+ft*25+e2[0],24+sin(ft*6)*3+e2[1],22+ft*12+e2[2]);
+      addDraw(p.z+50,'exh',()=>{
+        X.globalAlpha=(.5-ft*.4)*(cur==='exh'?1:.3);
+        X.beginPath();X.arc(p.x,p.y,(3-ft*2)*zm*.5,0,PI*2);
+        X.fillStyle='#9ca3af';X.fill();
+        X.globalAlpha=1;
+      });
+    }
   }
 }
 
-function draw() {
-  ctx.clearRect(0, 0, W, H);
+// ============ WHEELS ============
+function drawWheels(){
+  const b=run?sin(t*3.5)*2:0;
+  wheel3d(-110,18+b,62, 22,'susp');
+  wheel3d(-110,18+b,-62, 22,'susp');
+  wheel3d(125,18-b,62, 22,'susp');
+  wheel3d(125,18-b,-62, 22,'susp');
+}
 
-  // Background gradient
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, '#0a0e17');
-  bg.addColorStop(1, '#111827');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
+// ============ GROUND & EFFECTS ============
+function drawGround(){
+  const c=proj(0,35,0);
+  const g=X.createRadialGradient(c.x,c.y,20,c.x,c.y,350);
+  g.addColorStop(0,'rgba(99,102,241,.06)');
+  g.addColorStop(.5,'rgba(99,102,241,.02)');
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  X.fillStyle=g;
+  X.fillRect(0,0,W,H);
 
-  drawGrid();
-  drawShadow();
+  // Grid lines
+  X.globalAlpha=.04;
+  const step=50;
+  for(let i=-8;i<=8;i++){
+    const p1=p3(i*step,30,-400),p2=p3(i*step,30,400);
+    X.beginPath();X.moveTo(p1[0],p1[1]);X.lineTo(p2[0],p2[1]);
+    X.strokeStyle='#6366f1';X.lineWidth=.5;X.stroke();
+    const p3a=p3(-400,30,i*step),p4=p3(400,30,i*step);
+    X.beginPath();X.moveTo(p3a[0],p3a[1]);X.lineTo(p4[0],p4[1]);
+    X.stroke();
+  }
+  X.globalAlpha=1;
+}
 
-  // Draw systems in depth order (back to front)
+function drawGlow(){
+  if(!run)return;
+  const colors={
+    engine:'239,68,68',cool:'6,182,212',exh:'120,113,108',
+    elec:'234,179,8',fuel:'245,158,11',intake:'167,139,250'
+  };
+  if(colors[cur]){
+    const e2=eo(cur);
+    let gx=0,gy=0;
+    if(cur==='engine'){gx=-110;gy=-10;}
+    else if(cur==='cool'){gx=-150;gy=0;}
+    else if(cur==='exh'){gx=50;gy=24;}
+    else if(cur==='elec'){gx=-40;gy=-10;}
+    else if(cur==='fuel'){gx=0;gy=10;}
+    else if(cur==='intake'){gx=-130;gy=-5;}
+    const p=proj(gx+e2[0],gy+e2[1],e2[2]);
+    const g=X.createRadialGradient(p.x,p.y,5,p.x,p.y,80);
+    g.addColorStop(0,`rgba(${colors[cur]},.12)`);
+    g.addColorStop(1,`rgba(${colors[cur]},0)`);
+    X.fillStyle=g;
+    X.fillRect(p.x-100,p.y-100,200,200);
+  }
+}
+
+// ============ SYSTEM INFO ============
+const info={
+  engine:{n:'Двигатель ДВС',d:'Рядный 4-цил., 2.0L турбо, DOHC 16V',s:[['Мощность','250 л.с.'],['Крут. момент','350 Нм'],['Степень сж.','10.5:1'],['Порядок','1-3-4-2'],['Макс. об.','7000 об/мин'],['ГРМ','Цепной DOHC']]},
+  fuel:{n:'Топливная система',d:'Непосредственный впрыск GDI',s:[['Давление','200 бар'],['Форсунки','4× пьезо'],['Бак','55 л'],['Насос','Электрический'],['Расход','8.5 л/100км'],['Фильтр','10 мкм']]},
+  intake:{n:'Система наддува',d:'Twin-scroll турбина + интеркулер',s:[['Турбина','Twin-scroll'],['Давление','1.2 бар'],['Интеркулер','Воздух-воздух'],['Дроссель','Электронный'],['BOV','Рециркулир.'],['Wastegate','Электронный']]},
+  trans:{n:'Коробка передач',d:'7-DCT двойное сцепление',s:[['Тип','Двойное сцепление'],['Ступени','7 + задняя'],['Переключ.','< 0.2 сек'],['Сцепление','Мокрое мн.д.'],['Масло','ATF DCT III'],['Управление','Мехатроник']]},
+  drive:{n:'Полный привод AWD',d:'Haldex 5-го поколения + Torsen',s:[['Распред.','40/60 %'],['Муфта','Haldex Gen5'],['Диффер.','Torsen III'],['ШРУС','Трипоид'],['Кардан','2-опорный'],['Вискомуфта','Нет']]},
+  susp:{n:'Подвеска',d:'McPherson перед + многорычажка зад',s:[['Перед','McPherson'],['Зад','Многорычажная'],['Аморт.','Адаптивные CDC'],['Пружины','Бочкообразные'],['Стабил.','Перед + Зад'],['Ход','150 мм']]},
+  steer:{n:'Рулевое управление',d:'EPS с переменным усилием',s:[['Тип','Реечный'],['Усилитель','Электро (EPS)'],['Обороты','2.7 об.'],['Передат.','14.5:1'],['Адаптивн.','По скорости'],['Тяги','С наконечн.']]},
+  brake:{n:'Тормозная система',d:'4-поршн. Brembo + ABS 9.3 + ESP',s:[['Перед','Вент. 345мм'],['Зад','Вент. 310мм'],['Суппорта','Brembo 4P'],['ABS','Bosch 9.3'],['ESP','Торм. вектор.'],['Колодки','Керамические']]},
+  cool:{n:'Система охлаждения',d:'2-контурная жидкостная',s:[['Радиатор','Алюм. 2-рядн.'],['Помпа','Электрическая'],['Термостат','Электр. 87°C'],['Антифриз','G13 (6.5л)'],['Вентил.','2× электро'],['Контуры','ДВС + Турбо']]},
+  oil:{n:'Система смазки',d:'Полнопоточная с охладителем',s:[['Масло','5W-40 синт.'],['Объём','4.5 л'],['Давление','2-5 бар'],['Насос','Шестерённый'],['Фильтр','Полнопоточн.'],['Охладитель','Пластинчатый']]},
+  elec:{n:'Электросистема',d:'12V + 48V mild-hybrid BSG',s:[['АКБ','80Ah AGM'],['BSG','48V 12кВт'],['Шина','CAN-FD + LIN'],['ЭБУ','Bosch MED17'],['Датчики','> 80 шт'],['Провода','~ 2.5 км']]},
+  exh:{n:'Выхлопная система',d:'Катализатор + GPF + спорт-клапан',s:[['Коллектор','Литой стальной'],['Кат.','Трёхкомпон.'],['GPF','Сажевый фильтр'],['Лямбда','2 (до/после)'],['Глушитель','Резон.+задний'],['Клапан','Электронный']]},
+  body:{n:'Кузов / Несущая рама',d:'Монокок: сталь + алюминий + композит',s:[['Тип','Несущий монокок'],['Жёсткость','28000 Нм/°'],['Масса','1450 кг'],['Cd','0.28'],['Материалы','HSS/Al/CFRP'],['Деформ. зоны','Перед + Зад']]}
+};
+
+function sel(s){
+  cur=s;
+  document.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('act',b.dataset.s===s));
+  const i=info[s];
+  if(i){
+    let h=`<strong>${i.n}</strong><div class="desc">${i.d}</div>`;
+    i.s.forEach(r=>h+=`<div class="sr"><span>${r[0]}</span><span class="sv">${r[1]}</span></div>`);
+    document.getElementById('si').innerHTML=h;
+  }
+}
+
+// ============ CONTROLS ============
+function togRun(){run=!run;document.getElementById('btnRun').classList.toggle('on',run);}
+function togExp(){expl=!expl;document.getElementById('btnExp').classList.toggle('on',expl);}
+function togXr(){xray=!xray;document.getElementById('btnXr').classList.toggle('on',xray);}
+function reset(){rY=.52;rX=.48;zm=1.6;expl=0;xray=0;
+  document.getElementById('btnExp').classList.remove('on');
+  document.getElementById('btnXr').classList.remove('on');
+}
+
+// Mouse
+C.addEventListener('mousedown',e=>{drag={x:e.clientX,y:e.clientY,ry:rY,rx:rX};});
+addEventListener('mousemove',e=>{
+  if(!drag)return;
+  rY=drag.ry+(e.clientX-drag.x)*.006;
+  rX=max(-.8,min(.8,drag.rx+(e.clientY-drag.y)*.006));
+});
+addEventListener('mouseup',()=>{drag=null;});
+C.addEventListener('wheel',e=>{e.preventDefault();zm=max(.5,min(4,zm-e.deltaY*.002));},{passive:false});
+
+// Touch
+let tch=null;
+C.addEventListener('touchstart',e=>{if(e.touches.length===1){const t2=e.touches[0];tch={x:t2.clientX,y:t2.clientY,ry:rY,rx:rX};}});
+C.addEventListener('touchmove',e=>{e.preventDefault();if(tch&&e.touches.length===1){const t2=e.touches[0];rY=tch.ry+(t2.clientX-tch.x)*.006;rX=max(-.8,min(.8,tch.rx+(t2.clientY-tch.y)*.006));}},{passive:false});
+C.addEventListener('touchend',()=>{tch=null;});
+
+// ============ MAIN LOOP ============
+function update(){
+  if(run){rpm+=(3200-rpm)*.02;tmp+=(92-tmp)*.005;spd+=(120-spd)*.01;}
+  else{rpm*=.98;tmp+=(20-tmp)*.002;spd*=.97;}
+  document.getElementById('vRpm').textContent=rpm|0;
+  document.getElementById('vSpd').textContent=spd|0;
+  document.getElementById('vTmp').textContent=tmp|0;
+}
+
+function frame(){
+  t+=.016;
+  update();
+
+  X.clearRect(0,0,W,H);
+  // BG
+  const bg=X.createLinearGradient(0,0,W*.3,H);
+  bg.addColorStop(0,'#0c1220');bg.addColorStop(1,'#080c14');
+  X.fillStyle=bg;X.fillRect(0,0,W,H);
+
+  drawGround();
+
+  // Build all draw calls
   drawBody();
-  drawFuelSystem();
-  drawExhaust();
-  drawDrivetrain();
-  drawOilSystem();
-  drawCooling();
   drawEngine();
-  drawIntakeSystem();
-  drawTransmission();
-  drawSuspension();
-  drawSteering();
+  drawIntake();
+  drawFuel();
+  drawOil();
+  drawCool();
+  drawTrans();
+  drawDrive();
+  drawSusp();
+  drawSteer();
   drawBrakes();
-  drawElectrical();
+  drawExhaust();
+  drawElec();
   drawWheels();
-  drawGlowEffect();
+
+  // Sort and render
+  flushDraws();
+  drawGlow();
+
+  requestAnimationFrame(frame);
 }
 
-function loop(ts) {
-  const dt = 0.016;
-  time += dt;
-  updateSimulation(dt);
-  draw();
-  requestAnimationFrame(loop);
-}
-
-// ========== CONTROLS ==========
-function toggleAnim() { running = !running; targetRpm = running ? 3200 : 0; }
-function toggleExplode() { exploded = !exploded; }
-function toggleXray() { xray = !xray; }
-function resetView() {
-  rotAngle = 0.46; tiltAngle = 0.55; zoom = 1.0;
-  exploded = false; xray = false;
-}
-
-// Mouse rotation
-canvas.addEventListener('mousedown', e => { dragStart = {x:e.clientX, y:e.clientY, rot:rotAngle, tilt:tiltAngle}; });
-window.addEventListener('mousemove', e => {
-  if (!dragStart) return;
-  rotAngle = dragStart.rot + (e.clientX - dragStart.x) * 0.005;
-  tiltAngle = Math.max(0.2, Math.min(1.2, dragStart.tilt + (e.clientY - dragStart.y) * 0.005));
-});
-window.addEventListener('mouseup', () => { dragStart = null; });
-
-// Zoom
-canvas.addEventListener('wheel', e => {
-  e.preventDefault();
-  zoom = Math.max(0.3, Math.min(3, zoom - e.deltaY * 0.001));
-}, {passive: false});
-
-// Touch controls
-let touchStart = null;
-canvas.addEventListener('touchstart', e => {
-  if (e.touches.length === 1) {
-    const t = e.touches[0];
-    touchStart = {x:t.clientX, y:t.clientY, rot:rotAngle, tilt:tiltAngle};
-  }
-});
-canvas.addEventListener('touchmove', e => {
-  e.preventDefault();
-  if (touchStart && e.touches.length === 1) {
-    const t = e.touches[0];
-    rotAngle = touchStart.rot + (t.clientX - touchStart.x) * 0.005;
-    tiltAngle = Math.max(0.2, Math.min(1.2, touchStart.tilt + (t.clientY - touchStart.y) * 0.005));
-  }
-}, {passive: false});
-canvas.addEventListener('touchend', () => { touchStart = null; });
-
-// Init
-selectSystem('engine');
-requestAnimationFrame(loop);
+sel('engine');
+requestAnimationFrame(frame);
 </script>
 </body>
 </html>
